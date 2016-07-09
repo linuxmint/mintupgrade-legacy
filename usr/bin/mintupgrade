@@ -149,6 +149,9 @@ class MintUpgrade():
         self.progress("Removing obsolete packages")
         os.system('sudo apt-get remove %s' % " ".join(PACKAGES_REMOVALS)) # The return code indicates a failure if some packages were not found, so ignore it.
 
+        self.progress("Re-creating ~/.bashrc")
+        os.system('cp /etc/skel/.bashrc ~/.bashrc')
+
         if self.mint_edition.lower() == "cinnamon":
             self.progress("Re-enabling the Cinnamon screensaver")
             os.system("gsettings set org.cinnamon.desktop.screensaver idle-activation-enabled true")
