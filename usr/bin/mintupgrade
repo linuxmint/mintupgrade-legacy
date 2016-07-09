@@ -113,12 +113,21 @@ class MintUpgrade():
         os.system('sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew" --assume-no')
 
     def download(self):
+        self.progress("Downloading upgrade packages")
         messages = []
         messages.append("APT will now download the package updates necessary for the upgrade to %s." % DESTINATION)
         self.continue_yes_no(messages)
         self.check_command("sudo apt-get dist-upgrade --download-only --yes", "Failed to download packages for the upgrade.")
 
     def upgrade(self):
+        if self.mint_edition.lower() == "cinnamon":
+            self.progress("Disabling the Cinnamon screensaver")
+            os.system("gsettings set org.cinnamon.desktop.screensaver idle-activation-enabled false")
+        elif self.mint_edition.lower() == "mate":
+            self.progress("Disabling the MATE screensaver")
+            os.system("gsettings set org.mate.screensaver idle-activation-enabled false")
+
+        self.progress("Performing upgrade")
         messages = []
         messages.append("APT will perform the upgrade to %s." % DESTINATION)
         messages.append("This operation is non-reversible.")
@@ -137,6 +146,13 @@ class MintUpgrade():
 
         self.progress("Removing obsolete packages")
         self.check_command('sudo apt-get remove %s' % " ".join(PACKAGES_REMOVALS), "Failed to remove obsolete packages.")
+
+        if self.mint_edition.lower() == "cinnamon":
+            self.progress("Re-enabling the Cinnamon screensaver")
+            os.system("gsettings set org.cinnamon.desktop.screensaver idle-activation-enabled true")
+        elif self.mint_edition.lower() == "mate":
+            self.progress("Re-enabling the MATE screensaver")
+            os.system("gsettings set org.mate.screensaver idle-activation-enabled true")
 
     def check_command(self, command, message):
         ret = os.system(command)
