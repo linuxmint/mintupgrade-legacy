@@ -1,3 +1,9 @@
+mintupgrade (17.3.2) rosa; urgency=medium
+
+  * Added more progress info and disabled Cinnamon/MATE screensavers
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 09 Jul 2016 17:04:26 +0200
+
 mintupgrade (17.3.1) rosa; urgency=medium
 
   * Add notice when restoring the APT sources
