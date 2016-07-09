@@ -1,3 +1,12 @@
+mintupgrade (17.3.3) rosa; urgency=medium
+
+  * Update the cache and check mintupgrade version in prepare step
+  * Prepare: Don't fail if user is already pointing at destination
+  * Fixed typo
+  * Don't fail on package removals when a package is not found
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 09 Jul 2016 18:13:12 +0200
+
 mintupgrade (17.3.2) rosa; urgency=medium
 
   * Added more progress info and disabled Cinnamon/MATE screensavers
