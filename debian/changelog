@@ -1,3 +1,9 @@
+mintupgrade (17.3.1) rosa; urgency=medium
+
+  * Add notice when restoring the APT sources
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 09 Jul 2016 15:15:41 +0200
+
 mintupgrade (17.3.0) rosa; urgency=low
 
   * Initial release
