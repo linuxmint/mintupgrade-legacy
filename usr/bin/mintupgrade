@@ -206,7 +206,15 @@ def usage():
     sys.exit(0)
 
 if __name__ == '__main__':
+    
+    if os.getuid() == 0:
+        print ("")
+        print ("Please don't run this command as root or with elevated privileges.")
+        print ("")
+        sys.exit(1)
+
     os.system("clear")
+
     if len(sys.argv) != 2:
         usage()
     command = sys.argv[1]
