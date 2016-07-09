@@ -51,6 +51,7 @@ class MintUpgrade():
                     self.mint_codename = line.split('=')[1].replace('"', '').split()[0]
 
     def restore_sources(self):
+        self.progress("Restoring your backed up APT sources")
         if not os.path.exists(BACKUP_APT_SOURCES):
             self.fail("Missing backup %s" % BACKUP_APT_SOURCES)
         self.check_command("sudo mkdir -p /etc/apt/sources.list.d", "Failed to restore APT sources")
