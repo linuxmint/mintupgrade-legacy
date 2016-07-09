@@ -1,3 +1,10 @@
+mintupgrade (17.3.4) rosa; urgency=medium
+
+  * Recreate ~/.bashrc
+  * Prevent mintupgrade to be run as root or with sudo
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 09 Jul 2016 21:24:44 +0200
+
 mintupgrade (17.3.3) rosa; urgency=medium
 
   * Update the cache and check mintupgrade version in prepare step
