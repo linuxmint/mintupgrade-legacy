@@ -46,7 +46,7 @@ class MintUpgrade():
                 line = line.strip()
                 if "EDITION=" in line:
                     self.mint_edition = line.split('=')[1].replace('"', '').split()[0]
-                    self.mint_meta = "mint-meta-%s" % self.mint_edition.lower
+                    self.mint_meta = "mint-meta-%s" % self.mint_edition.lower()
                 if "CODENAME=" in line:
                     self.mint_codename = line.split('=')[1].replace('"', '').split()[0]
 
@@ -138,7 +138,7 @@ class MintUpgrade():
         self.check_command('sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew"', "Failed to upgrade some of the packages. Please review the error message, use APT to fix the situation and try again.")
 
         self.progress("Re-installing the meta-package for your edition of Linux Mint")
-        self.check_command('sudo apt-get install mint-meta-%s' % self.mint_meta, "Failed to install mint-meta-%s" % self.mint_meta)
+        self.check_command('sudo apt-get install %s' % self.mint_meta, "Failed to install %s" % self.mint_meta)
 
         self.progress("Re-installing the multimedia codecs")
         self.check_command('sudo apt-get install mint-meta-codecs', "Failed to install mint-meta-codecs")
