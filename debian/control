@@ -1,0 +1,20 @@
+Source: mintupgrade
+Section: admin
+Priority: optional
+Maintainer: Linux Mint <root@linuxmint.com>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.5
+
+Package: mintupgrade
+Architecture: all
+Depends: python3 (>= 3.3),
+         perl,
+         apt,
+         aptitude,
+         mint-common,
+         mint-info,
+         mintsystem,
+         zenity,
+         ${misc:Depends}
+Description: Linux Mint Release Upgrader
+ Used to upgrade to a newer release.

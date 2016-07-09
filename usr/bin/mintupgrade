@@ -1,0 +1,211 @@
+#!/usr/bin/python3
+
+import sys, os, apt
+import subprocess
+
+ORIGIN = "Linux Mint 17.3 'Rosa'"
+ORIGIN_CODENAME = "rosa"
+ORIGIN_BASE_CODENAME = "trusty"
+
+DESTINATION = "Linux Mint 18 'Sarah'"
+DESTINATION_CODENAME = "sarah"
+DESTINATION_BASE_CODENAME = "xenial"
+
+SUPPORTED_EDITIONS = ["cinnamon", "mate"]
+
+CHECK_UP_TO_DATE = ["apt", "dpkg"]
+
+BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
+
+PACKAGES_REMOVALS = ["gedit", "evince", "eog", "totem", "totem-mozilla", "gthumb", "pluma", "atril", "eom"]
+PACKAGES_ADDITIONS = ["xed", "xreader", "xviewer", "xviewer-plugins", "xplayer", "pix"]
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+class MintUpgrade():
+
+    def __init__(self):
+        # Check the Mint info file
+        if not os.path.exists("/etc/linuxmint/info"):
+            self.fail("Missing file '/etc/linuxmint/info'.")
+
+        # Check the edition
+        self.mint_codename = 'unknown'
+        self.mint_edition = 'unknown'
+        self.mint_meta = 'unknown'
+        with open("/etc/linuxmint/info", "r") as info:
+            for line in info:
+                line = line.strip()
+                if "EDITION=" in line:
+                    self.mint_edition = line.split('=')[1].replace('"', '').split()[0]
+                    self.mint_meta = "mint-meta-%s" % self.mint_edition.lower
+                if "CODENAME=" in line:
+                    self.mint_codename = line.split('=')[1].replace('"', '').split()[0]
+
+    def restore_sources(self):
+        if not os.path.exists(BACKUP_APT_SOURCES):
+            self.fail("Missing backup %s" % BACKUP_APT_SOURCES)
+        self.check_command("sudo mkdir -p /etc/apt/sources.list.d", "Failed to restore APT sources")
+        self.check_command("sudo rm -rf /etc/apt/sources.list.d/*", "Failed to restore APT sources")
+        self.check_command("sudo cp -R %s/* /etc/apt/" % BACKUP_APT_SOURCES, "Failed to restore APT sources")
+        self.check_command("sudo rm -rf '%s'" % BACKUP_APT_SOURCES, "Failed to restore APT sources")
+
+    def prepare(self):
+        # Check codename
+        self.progress("Checking your Linux Mint codename")
+        if self.mint_codename == DESTINATION_CODENAME:
+            self.fail("You are already running %s." % DESTINATION)
+        if self.mint_codename != ORIGIN_CODENAME:
+            self.fail("Your version of Linux Mint is '%s'. Only %s can be upgraded to %s." % (self.mint_codename.capitalize(), ORIGIN, DESTINATION))
+        
+        # Check edition
+        self.progress("Checking your Linux Mint edition")
+        if self.mint_edition.lower() not in SUPPORTED_EDITIONS:
+            self.fail("Your edition of Linux Mint is '%s'. It cannot be upgraded to %s." % (self.mint_edition, DESTINATION))
+
+        # Check that we're up to date
+        self.progress("Checking if Linux Mint is up to date")
+        cache = apt.Cache()
+        try:
+            for pkg in CHECK_UP_TO_DATE:
+                pkg = cache[pkg]            
+                if pkg.installed.version != pkg.candidate.version:
+                    self.fail("Your operating system is not up to date. Please apply all level 1, 2 and 3 updates before proceeding with this upgrade.")
+        except Exception as e:
+            self.fail("Your operating system is not up to date. Please apply all level 1, 2 and 3 updates before proceeding with this upgrade.")
+
+        # Switch to the destination APT sources
+        if not os.path.exists(BACKUP_APT_SOURCES):
+            self.progress("Backing up your APT sources")
+            messages = []
+            messages.append("Your repositories will now be switched to point to %s." % DESTINATION)
+            messages.append("Any 3rd party repositories or PPA will be disabled.")
+            messages.append("A backup of your APT sources will be written to %s." % BACKUP_APT_SOURCES)
+            self.continue_yes_no(messages)
+            os.system("mkdir -p %s" % BACKUP_APT_SOURCES)
+            os.system("cp -R /etc/apt/sources.* %s/" % BACKUP_APT_SOURCES)
+        self.progress("Setting up the repositories for %s" % DESTINATION)
+        if os.path.exists("/etc/apt/sources.list"):
+            self.check_command("sudo truncate --size 0 /etc/apt/sources.list", "Failed to configure APT sources")
+        self.check_command("sudo mkdir -p /etc/apt/sources.list.d", "Failed to configure APT sources")
+        self.check_command("sudo rm -rf /etc/apt/sources.list.d/*", "Failed to configure APT sources")
+        self.check_command("sudo cp /usr/share/linuxmint/mintupgrade/apt_destination_sources /etc/apt/sources.list.d/official-package-repositories.list", "Failed to configure APT sources")
+        self.check_command("sudo /usr/bin/apt-key add /usr/share/linuxmint/mintupgrade/keyrings/linuxmint-keyring.gpg", "Failed to configure APT sources")
+        self.check_command("sudo apt-get update", "Failed to configure APT sources")
+
+    def check(self):
+        self.progress("Simulating an upgrade")
+        messages = []
+        messages.append("APT will now calculate the package changes necessary to upgrade to %s." % DESTINATION)
+        messages.append("If conflicts are detected and APT is unable to perform the upgrade, take note of the packages causing the issue, remove them, and re-install them after the upgrade.")
+        messages.append("Pay close attention to what appears on the screen, and review the list of packages being REMOVED during the upgrade.")
+        messages.append("Take note of the packages being removed, so you can eventually reinstall them after the upgrade.")
+        self.continue_yes_no(messages)
+        os.system('sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew" --assume-no')
+
+    def download(self):
+        messages = []
+        messages.append("APT will now download the package updates necessary for the upgrade to %s." % DESTINATION)
+        self.continue_yes_no(messages)
+        self.check_command("sudo apt-get dist-upgrade --download-only --yes", "Failed to download packages for the upgrade.")
+
+    def upgrade(self):
+        messages = []
+        messages.append("APT will perform the upgrade to %s." % DESTINATION)
+        messages.append("This operation is non-reversible.")
+        messages.append("Make sure you made backups, you tested %s in live mode and you performed your favorite supertitious tricks before proceeding." % DESTINATION)
+        self.continue_yes_no(messages)
+        self.check_command('sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew"', "Failed to upgrade some of the packages. Please review the error message, use APT to fix the situation and try again.")
+
+        self.progress("Re-installing the meta-package for your edition of Linux Mint")
+        self.check_command('sudo apt-get install mint-meta-%s' % self.mint_meta, "Failed to install mint-meta-%s" % self.mint_meta)
+
+        self.progress("Re-installing the multimedia codecs")
+        self.check_command('sudo apt-get install mint-meta-codecs', "Failed to install mint-meta-codecs")
+
+        self.progress("Installing new packages")
+        self.check_command('sudo apt-get install %s' % " ".join(PACKAGES_ADDITIONS), "Failed to install additional packages.")
+
+        self.progress("Removing obsolete packages")
+        self.check_command('sudo apt-get remove %s' % " ".join(PACKAGES_REMOVALS), "Failed to remove obsolete packages.")
+
+    def check_command(self, command, message):
+        ret = os.system(command)
+        if ret != 0:
+            self.fail(message)
+
+    def fail(self, message):
+        print ("")
+        print ("------------------------------------------------")
+        print ("%s!!  ERROR: %s%s" % (bcolors.FAIL, message, bcolors.ENDC))
+        print ("!!  Exiting.")
+        print ("------------------------------------------------")
+        print ("")
+        sys.exit(1)
+
+    def continue_yes_no(self, messages):
+        print ("")
+        print ("-------------------------------------------------")
+        for message in messages:
+            print ("%s    %s%s" % (bcolors.WARNING, message, bcolors.ENDC))
+        print ("")
+        answer = None
+        while (answer not in ["y", "yes", "n", "no"]):
+            answer = input("%s    Do you want to continue? [y/n]:%s" % (bcolors.OKGREEN, bcolors.ENDC)).lower()
+        if answer in ["n", "no"]:
+            print ("Exiting.")
+            sys.exit(0)
+
+    def progress(self, message):
+        print ("%s  + %s...%s" % (bcolors.HEADER, message, bcolors.ENDC))
+
+
+def usage():
+    print ("")
+    print ("%sUsage:%s mintupgrade command" % (bcolors.HEADER, bcolors.ENDC))
+    print ("")
+    print ("%sCommands:%s" % (bcolors.HEADER, bcolors.ENDC))
+    print ("  help                   - prints this usage note")
+    print ("  check                  - checks the upgrade to %s" % DESTINATION)
+    print ("  prepare                - prepares the upgrade to %s" % DESTINATION)
+    print ("  download               - downloads the packages for the upgrade to %s" % DESTINATION)
+    print ("  upgrade                - upgrades to %s" % DESTINATION)
+    print ("  restore-sources        - restores the backed up APT sources (only use this command if you're still running %s)" % ORIGIN)
+    print ("")
+    sys.exit(0)
+
+if __name__ == '__main__':
+    os.system("clear")
+    if len(sys.argv) != 2:
+        usage()
+    command = sys.argv[1]
+    if command == "help":
+        usage()
+    
+    upgrader = MintUpgrade()
+
+    if command == "restore-sources":
+        upgrader.restore_sources()
+    elif command == "check":
+        upgrader.prepare()
+        upgrader.check()
+        upgrader.restore_sources()
+    elif command == "prepare":
+        upgrader.prepare()
+    elif command == "download":
+        upgrader.prepare()
+        upgrader.download()
+    elif command == "upgrade":
+        upgrader.prepare()
+        upgrader.download()
+        upgrader.upgrade()
+    else:
+        usage()
