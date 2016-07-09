@@ -147,7 +147,7 @@ class MintUpgrade():
         self.check_command('sudo apt-get install %s' % " ".join(PACKAGES_ADDITIONS), "Failed to install additional packages.")
 
         self.progress("Removing obsolete packages")
-        self.check_command('sudo apt-get remove %s' % " ".join(PACKAGES_REMOVALS), "Failed to remove obsolete packages.")
+        os.system('sudo apt-get remove %s' % " ".join(PACKAGES_REMOVALS)) # The return code indicates a failure if some packages were not found, so ignore it.
 
         if self.mint_edition.lower() == "cinnamon":
             self.progress("Re-enabling the Cinnamon screensaver")
@@ -184,6 +184,7 @@ class MintUpgrade():
             sys.exit(0)
 
     def progress(self, message):
+        print ("")
         print ("%s  + %s...%s" % (bcolors.HEADER, message, bcolors.ENDC))
 
 
