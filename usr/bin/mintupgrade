@@ -13,7 +13,7 @@ DESTINATION_BASE_CODENAME = "xenial"
 
 SUPPORTED_EDITIONS = ["cinnamon", "mate"]
 
-CHECK_UP_TO_DATE = ["apt", "dpkg"]
+CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg"]
 
 BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
 
@@ -73,6 +73,9 @@ class MintUpgrade():
             self.fail("Your edition of Linux Mint is '%s'. It cannot be upgraded to %s." % (self.mint_edition, DESTINATION))
 
         # Check that we're up to date
+        self.progress("updating cache")
+        os.system("sudo apt-get update")
+
         self.progress("Checking if Linux Mint is up to date")
         cache = apt.Cache()
         try:
