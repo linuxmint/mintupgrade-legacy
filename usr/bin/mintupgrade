@@ -62,9 +62,7 @@ class MintUpgrade():
     def prepare(self):
         # Check codename
         self.progress("Checking your Linux Mint codename")
-        if self.mint_codename == DESTINATION_CODENAME:
-            self.fail("You are already running %s." % DESTINATION)
-        if self.mint_codename != ORIGIN_CODENAME:
+        if self.mint_codename != ORIGIN_CODENAME and self.mint_codename != DESTINATION_CODENAME:
             self.fail("Your version of Linux Mint is '%s'. Only %s can be upgraded to %s." % (self.mint_codename.capitalize(), ORIGIN, DESTINATION))
         
         # Check edition
@@ -73,18 +71,19 @@ class MintUpgrade():
             self.fail("Your edition of Linux Mint is '%s'. It cannot be upgraded to %s." % (self.mint_edition, DESTINATION))
 
         # Check that we're up to date
-        self.progress("updating cache")
-        os.system("sudo apt-get update")
+        if self.mint_codename == ORIGIN_CODENAME:
+            self.progress("updating cache")
+            os.system("sudo apt-get update")
 
-        self.progress("Checking if Linux Mint is up to date")
-        cache = apt.Cache()
-        try:
-            for pkg in CHECK_UP_TO_DATE:
-                pkg = cache[pkg]            
-                if pkg.installed.version != pkg.candidate.version:
-                    self.fail("Your operating system is not up to date. Please apply all level 1, 2 and 3 updates before proceeding with this upgrade.")
-        except Exception as e:
-            self.fail("Your operating system is not up to date. Please apply all level 1, 2 and 3 updates before proceeding with this upgrade.")
+            self.progress("Checking if Linux Mint is up to date")
+            cache = apt.Cache()
+            try:
+                for pkg in CHECK_UP_TO_DATE:
+                    pkg = cache[pkg]            
+                    if pkg.installed.version != pkg.candidate.version:
+                        self.fail("Your operating system is not up to date. Please apply all level 1, 2 and 3 updates before proceeding with this upgrade.")
+            except Exception as e:
+                self.fail("Your operating system is not up to date. Please apply all level 1, 2 and 3 updates before proceeding with this upgrade.")
 
         # Switch to the destination APT sources
         if not os.path.exists(BACKUP_APT_SOURCES):
