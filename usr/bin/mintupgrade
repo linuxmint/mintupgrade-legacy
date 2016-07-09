@@ -49,6 +49,13 @@ class MintUpgrade():
                     self.mint_meta = "mint-meta-%s" % self.mint_edition.lower()
                 if "CODENAME=" in line:
                     self.mint_codename = line.split('=')[1].replace('"', '').split()[0]
+        self.points_to_destination = False
+        if os.path.exists("/etc/apt/sources.list.d/official-package-repositories.list"):
+            with open("/etc/apt/sources.list.d/official-package-repositories.list") as sources:
+                for line in sources:
+                    if DESTINATION_CODENAME in line:
+                        self.points_to_destination = True
+                        break
 
     def restore_sources(self):
         self.progress("Restoring your backed up APT sources")
@@ -71,7 +78,7 @@ class MintUpgrade():
             self.fail("Your edition of Linux Mint is '%s'. It cannot be upgraded to %s." % (self.mint_edition, DESTINATION))
 
         # Check that we're up to date
-        if self.mint_codename == ORIGIN_CODENAME:
+        if not self.points_to_destination:
             self.progress("updating cache")
             os.system("sudo apt-get update")
 
