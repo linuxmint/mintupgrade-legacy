@@ -154,7 +154,8 @@ class MintUpgrade():
         self.check_command('sudo apt-get install %s' % " ".join(PACKAGES_ADDITIONS), "Failed to install additional packages.")
 
         self.progress("Removing obsolete packages")
-        os.system('sudo apt-get remove %s' % " ".join(PACKAGES_REMOVALS)) # The return code indicates a failure if some packages were not found, so ignore it.
+        for removal in PACKAGES_REMOVALS:
+            os.system('sudo apt-get remove %s' % removal) # The return code indicates a failure if some packages were not found, so ignore it.
 
         self.progress("Re-creating ~/.bashrc")
         os.system('cp /etc/skel/.bashrc ~/.bashrc')
