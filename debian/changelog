@@ -1,3 +1,9 @@
+mintupgrade (17.3.8) rosa; urgency=medium
+
+  * Removals: Remove pkgs one by one
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 13 Jul 2016 17:50:19 +0200
+
 mintupgrade (17.3.7) rosa; urgency=medium
 
   * Added missing sudo call in LSB restoration step
