@@ -1,3 +1,10 @@
+mintupgrade (17.3.6) rosa; urgency=medium
+
+  * Rephrased warning about 3rd party sources
+  * Re-adjust lsb-release, issue and issue.net
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 13 Jul 2016 16:42:48 +0200
+
 mintupgrade (17.3.5) rosa; urgency=medium
 
   * Prepare: Only check if the system is up to date if the sources don't point to the destination.
