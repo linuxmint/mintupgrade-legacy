@@ -1,3 +1,9 @@
+mintupgrade (17.3.7) rosa; urgency=medium
+
+  * Added missing sudo call in LSB restoration step
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 13 Jul 2016 16:59:42 +0200
+
 mintupgrade (17.3.6) rosa; urgency=medium
 
   * Rephrased warning about 3rd party sources
