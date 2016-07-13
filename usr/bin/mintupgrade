@@ -160,9 +160,9 @@ class MintUpgrade():
         os.system('cp /etc/skel/.bashrc ~/.bashrc')
 
         self.progress("Re-adjusting base files")
-        os.system('cp /usr/share/linuxmint/mintupgrade/lsb-release /etc/lsb-release')
-        os.system('cp /usr/share/linuxmint/mintupgrade/issue /etc/issue')
-        os.system('cp /usr/share/linuxmint/mintupgrade/issue.net /etc/issue.net')
+        os.system('sudo cp /usr/share/linuxmint/mintupgrade/lsb-release /etc/lsb-release')
+        os.system('sudo cp /usr/share/linuxmint/mintupgrade/issue /etc/issue')
+        os.system('sudo cp /usr/share/linuxmint/mintupgrade/issue.net /etc/issue.net')
 
         if self.mint_edition.lower() == "cinnamon":
             self.progress("Re-enabling the Cinnamon screensaver")
