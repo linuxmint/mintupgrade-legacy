@@ -97,7 +97,7 @@ class MintUpgrade():
             self.progress("Backing up your APT sources")
             messages = []
             messages.append("Your repositories will now be switched to point to %s." % DESTINATION)
-            messages.append("Any 3rd party repositories or PPA will be disabled.")
+            messages.append("Any 3rd party repositories or PPA will be removed.")
             messages.append("A backup of your APT sources will be written to %s." % BACKUP_APT_SOURCES)
             self.continue_yes_no(messages)
             os.system("mkdir -p %s" % BACKUP_APT_SOURCES)
