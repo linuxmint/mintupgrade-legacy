@@ -17,6 +17,7 @@ CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg"]
 
 BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
 
+PACKAGES_PRE_REMOVALS = ["bamfdaemon"]
 PACKAGES_REMOVALS = ["gedit", "evince", "eog", "totem", "totem-mozilla", "gthumb", "pluma", "atril", "eom", "ristretto"]
 PACKAGES_ADDITIONS = ["xed", "xreader", "xviewer", "xviewer-plugins", "xplayer", "pix", "mint-y-icons", "mint-y-theme"]
 
@@ -135,6 +136,10 @@ class MintUpgrade():
         elif self.mint_edition.lower() == "mate":
             self.progress("Disabling the MATE screensaver")
             os.system("gsettings set org.mate.screensaver idle-activation-enabled false")
+
+        self.progress("Removing blacklisted packages")
+        for removal in PACKAGES_PRE_REMOVALS:
+            os.system('sudo apt-get remove --yes %s' % removal) # The return code indicates a failure if some packages were not found, so ignore it.
 
         self.progress("Performing upgrade")
         messages = []
