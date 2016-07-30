@@ -11,7 +11,7 @@ DESTINATION = "Linux Mint 18 'Sarah'"
 DESTINATION_CODENAME = "sarah"
 DESTINATION_BASE_CODENAME = "xenial"
 
-SUPPORTED_EDITIONS = ["cinnamon", "mate"]
+SUPPORTED_EDITIONS = ["cinnamon", "mate", "xfce"]
 
 CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg"]
 
