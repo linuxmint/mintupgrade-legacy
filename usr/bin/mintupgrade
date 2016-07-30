@@ -17,7 +17,7 @@ CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg"]
 
 BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
 
-PACKAGES_REMOVALS = ["gedit", "evince", "eog", "totem", "totem-mozilla", "gthumb", "pluma", "atril", "eom"]
+PACKAGES_REMOVALS = ["gedit", "evince", "eog", "totem", "totem-mozilla", "gthumb", "pluma", "atril", "eom", "ristretto"]
 PACKAGES_ADDITIONS = ["xed", "xreader", "xviewer", "xviewer-plugins", "xplayer", "pix", "mint-y-icons", "mint-y-theme"]
 
 class bcolors:
