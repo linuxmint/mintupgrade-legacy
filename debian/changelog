@@ -1,3 +1,12 @@
+mintupgrade (17.3.9) rosa; urgency=medium
+
+  * Additions: Add mint-y theme and icons
+  * Added ristretto to the list of package removals
+  * Don't ask confirmation for post-upgrade steps
+  * Enable upgrades for Xfce edition
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 30 Jul 2016 13:55:11 +0200
+
 mintupgrade (17.3.8) rosa; urgency=medium
 
   * Removals: Remove pkgs one by one
