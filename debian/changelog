@@ -1,3 +1,9 @@
+mintupgrade (17.3.10) rosa; urgency=medium
+
+  * Remove bamfdaemon before the upgrade
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 30 Jul 2016 16:30:09 +0200
+
 mintupgrade (17.3.9) rosa; urgency=medium
 
   * Additions: Add mint-y theme and icons
