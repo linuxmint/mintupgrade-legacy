@@ -145,17 +145,17 @@ class MintUpgrade():
         self.check_command('sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew"', "Failed to upgrade some of the packages. Please review the error message, use APT to fix the situation and try again.")
 
         self.progress("Re-installing the meta-package for your edition of Linux Mint")
-        self.check_command('sudo apt-get install %s' % self.mint_meta, "Failed to install %s" % self.mint_meta)
+        self.check_command('sudo apt-get install --yes %s' % self.mint_meta, "Failed to install %s" % self.mint_meta)
 
         self.progress("Re-installing the multimedia codecs")
-        self.check_command('sudo apt-get install mint-meta-codecs', "Failed to install mint-meta-codecs")
+        self.check_command('sudo apt-get install --yes mint-meta-codecs', "Failed to install mint-meta-codecs")
 
         self.progress("Installing new packages")
-        self.check_command('sudo apt-get install %s' % " ".join(PACKAGES_ADDITIONS), "Failed to install additional packages.")
+        self.check_command('sudo apt-get install --yes %s' % " ".join(PACKAGES_ADDITIONS), "Failed to install additional packages.")
 
         self.progress("Removing obsolete packages")
         for removal in PACKAGES_REMOVALS:
-            os.system('sudo apt-get remove %s' % removal) # The return code indicates a failure if some packages were not found, so ignore it.
+            os.system('sudo apt-get remove --yes %s' % removal) # The return code indicates a failure if some packages were not found, so ignore it.
 
         self.progress("Re-creating ~/.bashrc")
         os.system('cp /etc/skel/.bashrc ~/.bashrc')
