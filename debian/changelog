@@ -1,3 +1,9 @@
+mintupgrade (17.3.11) rosa; urgency=medium
+
+  * Use Dpkg::Options::=--force-overwrite
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 02 Aug 2016 12:08:31 +0200
+
 mintupgrade (17.3.10) rosa; urgency=medium
 
   * Remove bamfdaemon before the upgrade
