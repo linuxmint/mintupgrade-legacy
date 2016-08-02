@@ -120,7 +120,7 @@ class MintUpgrade():
         messages.append("Pay close attention to what appears on the screen, and review the list of packages being REMOVED during the upgrade.")
         messages.append("Take note of the packages being removed, so you can eventually reinstall them after the upgrade.")
         self.continue_yes_no(messages)
-        os.system('sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew" --assume-no')
+        os.system('sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" --assume-no')
 
     def download(self):
         self.progress("Downloading upgrade packages")
@@ -147,7 +147,7 @@ class MintUpgrade():
         messages.append("This operation is non-reversible.")
         messages.append("Make sure you made backups, you tested %s in live mode and you performed your favorite supertitious tricks before proceeding." % DESTINATION)
         self.continue_yes_no(messages)
-        self.check_command('sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew"', "Failed to upgrade some of the packages. Please review the error message, use APT to fix the situation and try again.")
+        self.check_command('sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite"', "Failed to upgrade some of the packages. Please review the error message, use APT to fix the situation and try again.")
 
         self.progress("Re-installing the meta-package for your edition of Linux Mint")
         self.check_command('sudo apt-get install --yes %s' % self.mint_meta, "Failed to install %s" % self.mint_meta)
