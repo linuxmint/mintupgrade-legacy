@@ -162,9 +162,6 @@ class MintUpgrade():
         for removal in PACKAGES_REMOVALS:
             os.system('sudo apt-get remove --yes %s' % removal) # The return code indicates a failure if some packages were not found, so ignore it.
 
-        self.progress("Re-creating ~/.bashrc")
-        os.system('cp /etc/skel/.bashrc ~/.bashrc')
-
         self.progress("Re-adjusting base files")
         os.system('sudo cp /usr/share/linuxmint/mintupgrade/lsb-release /etc/lsb-release')
         os.system('sudo cp /usr/share/linuxmint/mintupgrade/issue /etc/issue')
