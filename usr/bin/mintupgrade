@@ -3,13 +3,13 @@
 import sys, os, apt
 import subprocess
 
-ORIGIN = "Linux Mint 17.3 'Rosa'"
-ORIGIN_CODENAME = "rosa"
-ORIGIN_BASE_CODENAME = "trusty"
+ORIGIN = "Linux Mint 18.3 'Sylvia'"
+ORIGIN_CODENAME = "sylvia"
+ORIGIN_BASE_CODENAME = "xenial"
 
-DESTINATION = "Linux Mint 18 'Sarah'"
-DESTINATION_CODENAME = "sarah"
-DESTINATION_BASE_CODENAME = "xenial"
+DESTINATION = "Linux Mint 19 'Tara'"
+DESTINATION_CODENAME = "tara"
+DESTINATION_BASE_CODENAME = "bionic"
 
 SUPPORTED_EDITIONS = ["cinnamon", "mate", "xfce"]
 
@@ -17,9 +17,9 @@ CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg"]
 
 BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
 
-PACKAGES_PRE_REMOVALS = ["bamfdaemon"]
-PACKAGES_REMOVALS = ["gedit", "evince", "eog", "totem", "totem-mozilla", "gthumb", "pluma", "atril", "eom", "ristretto"]
-PACKAGES_ADDITIONS = ["xed", "xreader", "xviewer", "xviewer-plugins", "xplayer", "pix", "mint-y-icons", "mint-y-theme"]
+PACKAGES_PRE_REMOVALS = []
+PACKAGES_REMOVALS = ["vino", "banshee"]
+PACKAGES_ADDITIONS = ["rhythmbox"]
 
 class bcolors:
     HEADER = '\033[95m'
@@ -72,7 +72,7 @@ class MintUpgrade():
         self.progress("Checking your Linux Mint codename")
         if self.mint_codename != ORIGIN_CODENAME and self.mint_codename != DESTINATION_CODENAME:
             self.fail("Your version of Linux Mint is '%s'. Only %s can be upgraded to %s." % (self.mint_codename.capitalize(), ORIGIN, DESTINATION))
-        
+
         # Check edition
         self.progress("Checking your Linux Mint edition")
         if self.mint_edition.lower() not in SUPPORTED_EDITIONS:
@@ -87,11 +87,11 @@ class MintUpgrade():
             cache = apt.Cache()
             try:
                 for pkg in CHECK_UP_TO_DATE:
-                    pkg = cache[pkg]            
+                    pkg = cache[pkg]
                     if pkg.installed.version != pkg.candidate.version:
-                        self.fail("Your operating system is not up to date. Please apply all level 1, 2 and 3 updates before proceeding with this upgrade.")
+                        self.fail("Your operating system is not up to date. Please apply available updates before proceeding with this upgrade.")
             except Exception as e:
-                self.fail("Your operating system is not up to date. Please apply all level 1, 2 and 3 updates before proceeding with this upgrade.")
+                self.fail("Your operating system is not up to date. Please apply available updates before proceeding with this upgrade.")
 
         # Switch to the destination APT sources
         if not os.path.exists(BACKUP_APT_SOURCES):
@@ -109,7 +109,6 @@ class MintUpgrade():
         self.check_command("sudo mkdir -p /etc/apt/sources.list.d", "Failed to configure APT sources")
         self.check_command("sudo rm -rf /etc/apt/sources.list.d/*", "Failed to configure APT sources")
         self.check_command("sudo cp /usr/share/linuxmint/mintupgrade/apt_destination_sources /etc/apt/sources.list.d/official-package-repositories.list", "Failed to configure APT sources")
-        self.check_command("sudo /usr/bin/apt-key add /usr/share/linuxmint/mintupgrade/keyrings/linuxmint-keyring.gpg", "Failed to configure APT sources")
         self.check_command("sudo apt-get update", "Failed to configure APT sources")
 
     def check(self):
@@ -162,10 +161,10 @@ class MintUpgrade():
         for removal in PACKAGES_REMOVALS:
             os.system('sudo apt-get remove --yes %s' % removal) # The return code indicates a failure if some packages were not found, so ignore it.
 
-        self.progress("Re-adjusting base files")
-        os.system('sudo cp /usr/share/linuxmint/mintupgrade/lsb-release /etc/lsb-release')
-        os.system('sudo cp /usr/share/linuxmint/mintupgrade/issue /etc/issue')
-        os.system('sudo cp /usr/share/linuxmint/mintupgrade/issue.net /etc/issue.net')
+        self.progress("System adjustments")
+        os.system("sudo rm -f /etc/systemd/logind.conf")
+        os.system("apt install --reinstall -o Dpkg::Options::=\"--force-confmiss\" systemd")
+        os.system("sudo rm -f /etc/polkit-1/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla")
 
         if self.mint_edition.lower() == "cinnamon":
             self.progress("Re-enabling the Cinnamon screensaver")
@@ -221,7 +220,7 @@ def usage():
     sys.exit(0)
 
 if __name__ == '__main__':
-    
+
     if os.getuid() == 0:
         print ("")
         print ("Please don't run this command as root or with elevated privileges.")
@@ -235,7 +234,7 @@ if __name__ == '__main__':
     command = sys.argv[1]
     if command == "help":
         usage()
-    
+
     upgrader = MintUpgrade()
 
     if command == "restore-sources":
