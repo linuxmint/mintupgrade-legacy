@@ -1,3 +1,13 @@
+mintupgrade (18.3.0) sylvia; urgency=medium
+
+  [ PaulXiCao ]
+  * removing the reseting of the .bashrc file (#9)
+
+  [ Clement Lefebvre ]
+  * Update for the 18.3 -> 19 upgrade path
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 30 Jun 2018 19:04:44 +0200
+
 mintupgrade (17.3.11) rosa; urgency=medium
 
   * Use Dpkg::Options::=--force-overwrite
