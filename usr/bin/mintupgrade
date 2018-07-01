@@ -218,7 +218,7 @@ class MintUpgrade():
         print ("")
         answer = None
         while (answer not in ["y", "yes", "n", "no"]):
-            answer = input("%s    Do you want to continue? [y/n]:%s" % (bcolors.OKGREEN, bcolors.ENDC)).lower()
+            answer = input("%s    Do you want to continue? [y/n]:%s " % (bcolors.OKGREEN, bcolors.ENDC)).lower()
         if answer in ["n", "no"]:
             print ("Exiting.")
             sys.exit(0)
