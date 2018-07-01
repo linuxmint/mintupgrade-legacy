@@ -146,7 +146,20 @@ class MintUpgrade():
         messages.append("This operation is non-reversible.")
         messages.append("Make sure you made backups, you tested %s in live mode and you performed your favorite supertitious tricks before proceeding." % DESTINATION)
         self.continue_yes_no(messages)
-        self.check_command('sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite"', "Failed to upgrade some of the packages. Please review the error message, use APT to fix the situation and try again.")
+
+        fallback_commands = []
+        fallback_commands.append("sudo dpkg --configure -a")
+        fallback_commands.append("sudo apt-get install -fyq")
+
+        result = self.try_command(5, 'DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical sudo apt-get upgrade -fyq -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite"', fallback_commands)
+        if not result:
+            self.progress("An issue was detected during the upgrade, running the upgrade in manual mode.")
+            self.check_command('sudo apt-get upgrade -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite"', "Failed to upgrade some of the packages. Please review the error message, use APT to fix the situation and try again.")
+
+        result = self.try_command(5, 'DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical sudo apt-get dist-upgrade -fyq -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite"', fallback_commands)
+        if not result:
+            self.progress("An issue was detected during the upgrade, running dist-upgrade in manual mode.")
+            self.check_command('sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite"', "Failed to dist-upgrade some of the packages. Please review the error message, use APT to fix the situation and try again.")
 
         self.progress("Re-installing the meta-package for your edition of Linux Mint")
         self.check_command('sudo apt-get install --yes %s' % self.mint_meta, "Failed to install %s" % self.mint_meta)
@@ -177,6 +190,16 @@ class MintUpgrade():
         ret = os.system(command)
         if ret != 0:
             self.fail(message)
+
+    def try_command(self, num_times, command, fallback_commands):
+        success = False
+        for i in range(num_times):
+            ret = os.system(command)
+            if ret == 0:
+                return True
+            self.progress("Error detected on try #%d, running fallback commands" % (i+1))
+            for fallback_command in fallback_commands:
+                os.system(command)
 
     def fail(self, message):
         print ("")
