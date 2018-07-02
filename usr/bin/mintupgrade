@@ -78,6 +78,14 @@ class MintUpgrade():
         if self.mint_edition.lower() not in SUPPORTED_EDITIONS:
             self.fail("Your edition of Linux Mint is '%s'. It cannot be upgraded to %s." % (self.mint_edition, DESTINATION))
 
+        # Check display manager
+        self.progress("Checking your Display Manager")
+        dm_file = "/etc/X11/default-display-manager"
+        if os.path.exists(dm_file):
+            with open(dm_file) as dm_handle:
+                if "mdm" in dm_handle.read():
+                    self.fail("MDM is no longer supported in Linux Mint 19, please switch to LightDM.")
+
         # Check that we're up to date
         if not self.points_to_destination:
             self.progress("updating cache")
