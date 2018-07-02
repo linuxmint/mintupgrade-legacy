@@ -174,10 +174,12 @@ class MintUpgrade():
         for removal in PACKAGES_REMOVALS:
             os.system('sudo apt-get remove --yes %s' % removal) # The return code indicates a failure if some packages were not found, so ignore it.
 
-        self.progress("System adjustments")
+        self.progress("Performing system adjustments")
         os.system("sudo rm -f /etc/systemd/logind.conf")
         os.system("apt install --reinstall -o Dpkg::Options::=\"--force-confmiss\" systemd")
         os.system("sudo rm -f /etc/polkit-1/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla")
+
+        self.progress("The upgrade is finished. Reboot the computer with \"sudo reboot\" when ready.")
 
     def check_command(self, command, message):
         ret = os.system(command)
