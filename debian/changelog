@@ -1,3 +1,9 @@
+mintupgrade (18.3.3) sylvia; urgency=medium
+
+  * Fix missing sudo in system call
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 02 Jul 2018 18:55:27 +0200
+
 mintupgrade (18.3.2) sylvia; urgency=medium
 
   * Post-upgrade: Adjust GRUB title
