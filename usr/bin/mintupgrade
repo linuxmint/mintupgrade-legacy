@@ -193,7 +193,7 @@ class MintUpgrade():
         os.system("apt install --reinstall -o Dpkg::Options::=\"--force-confmiss\" systemd")
         os.system("sudo rm -f /etc/polkit-1/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla")
         if os.path.exists("/usr/share/ubuntu-system-adjustments/systemd/adjust-grub-title"):
-            os.system("/usr/share/ubuntu-system-adjustments/systemd/adjust-grub-title")
+            os.system("sudo /usr/share/ubuntu-system-adjustments/systemd/adjust-grub-title")
 
         self.progress("The upgrade is finished. Reboot the computer with \"sudo reboot\" when ready.")
 
