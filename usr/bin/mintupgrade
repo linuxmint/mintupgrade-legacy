@@ -131,10 +131,10 @@ class MintUpgrade():
     def upgrade(self):
         if self.mint_edition.lower() == "cinnamon":
             self.progress("Disabling the Cinnamon screensaver")
-            os.system("gsettings set org.cinnamon.desktop.screensaver idle-activation-enabled false")
+            os.system("killall cinnamon-screensaver")
         elif self.mint_edition.lower() == "mate":
             self.progress("Disabling the MATE screensaver")
-            os.system("gsettings set org.mate.screensaver idle-activation-enabled false")
+            os.system("killall mate-screensaver")
 
         self.progress("Removing blacklisted packages")
         for removal in PACKAGES_PRE_REMOVALS:
@@ -178,13 +178,6 @@ class MintUpgrade():
         os.system("sudo rm -f /etc/systemd/logind.conf")
         os.system("apt install --reinstall -o Dpkg::Options::=\"--force-confmiss\" systemd")
         os.system("sudo rm -f /etc/polkit-1/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla")
-
-        if self.mint_edition.lower() == "cinnamon":
-            self.progress("Re-enabling the Cinnamon screensaver")
-            os.system("gsettings set org.cinnamon.desktop.screensaver idle-activation-enabled true")
-        elif self.mint_edition.lower() == "mate":
-            self.progress("Re-enabling the MATE screensaver")
-            os.system("gsettings set org.mate.screensaver idle-activation-enabled true")
 
     def check_command(self, command, message):
         ret = os.system(command)
