@@ -78,6 +78,11 @@ class MintUpgrade():
         if self.mint_edition.lower() not in SUPPORTED_EDITIONS:
             self.fail("Your edition of Linux Mint is '%s'. It cannot be upgraded to %s." % (self.mint_edition, DESTINATION))
 
+        # Check for timeshift configuration
+        self.progress("Checking your Timeshift configuration")
+        if not os.path.exists("/etc/timeshift.json"):
+            self.fail("Please set up system snapshots. If anything goes wrong with the upgrade, snapshots will allow you to restore your operating system. Install and configure Timeshit, and create a snapshot before proceeding with the upgrade.")
+
         # Check display manager
         self.progress("Checking your Display Manager")
         dm_file = "/etc/X11/default-display-manager"
@@ -85,6 +90,7 @@ class MintUpgrade():
             with open(dm_file) as dm_handle:
                 if "mdm" in dm_handle.read():
                     self.fail("MDM is no longer supported in Linux Mint 19, please switch to LightDM.")
+
 
         # Check that we're up to date
         if not self.points_to_destination:
