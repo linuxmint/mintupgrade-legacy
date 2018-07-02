@@ -1,3 +1,15 @@
+mintupgrade (18.3.1) sylvia; urgency=medium
+
+  * Add the ability to try a command multiple times
+  * Reduce verbosity for most apt-get commands
+  * Add a space after yes_no prompts
+  * Kill screensaver processes
+  * Add a message to indicate the upgrade is finished.
+  * Check if the DM is MDM
+  * Check for /etc/timeshift.json
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 02 Jul 2018 13:56:16 +0200
+
 mintupgrade (18.3.0) sylvia; urgency=medium
 
   [ PaulXiCao ]
