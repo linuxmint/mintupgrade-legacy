@@ -1,3 +1,9 @@
+mintupgrade (18.3.5) sylvia; urgency=medium
+
+  * Pre-upgrade: Suggest to reboot the computer after applying updates.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 03 Jul 2018 23:05:21 +0200
+
 mintupgrade (18.3.4) sylvia; urgency=medium
 
   * Preserve /etc/fstab
