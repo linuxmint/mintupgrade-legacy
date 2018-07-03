@@ -105,9 +105,9 @@ class MintUpgrade():
                 for pkg in CHECK_UP_TO_DATE:
                     pkg = cache[pkg]
                     if pkg.installed.version != pkg.candidate.version:
-                        self.fail("Your operating system is not up to date. Please apply available updates before proceeding with this upgrade.")
+                        self.fail("Your operating system is not up to date. Please apply available updates and reboot the computer.")
             except Exception as e:
-                self.fail("Your operating system is not up to date. Please apply available updates before proceeding with this upgrade.")
+                self.fail("Your operating system is not up to date. Please apply available updates and reboot the computer.")
 
         # Switch to the destination APT sources
         if not os.path.exists(BACKUP_APT_SOURCES):
