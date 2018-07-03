@@ -2,6 +2,7 @@
 
 import sys, os, apt
 import subprocess
+import filecmp
 
 ORIGIN = "Linux Mint 18.3 'Sylvia'"
 ORIGIN_CODENAME = "sylvia"
@@ -16,6 +17,7 @@ SUPPORTED_EDITIONS = ["cinnamon", "mate", "xfce"]
 CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg"]
 
 BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
+BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup/fstab")
 
 PACKAGES_PRE_REMOVALS = []
 PACKAGES_REMOVALS = ["vino", "banshee"]
@@ -150,6 +152,9 @@ class MintUpgrade():
             self.progress("Disabling the MATE screensaver")
             os.system("killall mate-screensaver")
 
+        self.progress("Saving /etc/fstab")
+        os.system("cp /etc/fstab %s" % BACKUP_FSTAB)
+
         self.progress("Removing blacklisted packages")
         for removal in PACKAGES_PRE_REMOVALS:
             os.system('sudo apt-get remove --yes %s' % removal) # The return code indicates a failure if some packages were not found, so ignore it.
@@ -195,6 +200,12 @@ class MintUpgrade():
         if os.path.exists("/usr/share/ubuntu-system-adjustments/systemd/adjust-grub-title"):
             os.system("sudo /usr/share/ubuntu-system-adjustments/systemd/adjust-grub-title")
 
+        # Restore /etc/fstab if it was changed
+        if not filecmp.cmp('/etc/fstab', BACKUP_FSTAB):
+            os.system("cp /etc/fstab %s.upgraded" % BACKUP_FSTAB)
+            os.system("sudo cp %s /etc/fstab" % BACKUP_FSTAB)
+            self.warn("A package modified /etc/fstab during the upgrade. To ensure a successful boot, the upgrader restored your original /etc/fstab and saved the modified file in %d.upgraded." % BACKUP_FSTAB)
+
         self.progress("The upgrade is finished. Reboot the computer with \"sudo reboot\" when ready.")
 
     def check_command(self, command, message):
@@ -238,6 +249,9 @@ class MintUpgrade():
         print ("")
         print ("%s  + %s...%s" % (bcolors.HEADER, message, bcolors.ENDC))
 
+    def warn(self, message):
+        print ("")
+        print ("%s  + %s%s" % (bcolors.WARNING, message, bcolors.ENDC))
 
 def usage():
     print ("")
