@@ -21,7 +21,7 @@ BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup/fstab")
 
 PACKAGES_PRE_REMOVALS = []
 PACKAGES_REMOVALS = ["vino", "banshee"]
-PACKAGES_ADDITIONS = ["rhythmbox"]
+PACKAGES_ADDITIONS = ["rhythmbox", "libblockdev-crypto2"]
 
 class bcolors:
     HEADER = '\033[95m'
