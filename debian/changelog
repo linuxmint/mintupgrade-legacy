@@ -1,3 +1,10 @@
+mintupgrade (18.3.8) sylvia; urgency=medium
+
+  * Removals: Don't just remove, purge.
+  * Purge gnome-user-share
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 06 Jul 2018 18:35:06 +0200
+
 mintupgrade (18.3.7) sylvia; urgency=medium
 
   [ monsta ]
