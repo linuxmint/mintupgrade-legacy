@@ -20,7 +20,7 @@ BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
 BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup/fstab")
 
 PACKAGES_PRE_REMOVALS = []
-PACKAGES_REMOVALS = ["vino", "banshee"]
+PACKAGES_REMOVALS = ["vino", "banshee", "gnome-user-share"]
 PACKAGES_ADDITIONS = ["rhythmbox", "libblockdev-crypto2"]
 
 class bcolors:
