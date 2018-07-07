@@ -93,14 +93,23 @@ class MintUpgrade():
                 if "mdm" in dm_handle.read():
                     self.fail("MDM is no longer supported in Linux Mint 19, please switch to LightDM.")
 
-
-        # Check that we're up to date
         if not self.points_to_destination:
-            self.progress("updating cache")
+            self.progress("Updating cache")
             os.system("DEBIAN_PRIORITY=critical sudo apt-get update")
-
-            self.progress("Checking if Linux Mint is up to date")
             cache = apt.Cache()
+
+            # Check MESA, 18.0.5 is causing problems (bionic only has 18.0.0 atm)
+            self.progress("Checking your version of MESA")
+            try:
+                if cache["libegl1-mesa"].installed.version.startswith("18.0.5"):
+                    self.fail("MESA 18.0.5 currently breaks the upgrade between Ubuntu 16.04 and 18.04 and Linux Mint 18.3 and Linux Mint 19. Restore a snapshot taken before MESA was upgraded to 18.0.5, or wait for Ubuntu to fix this problem.")
+                else:
+                    print(cache["libegl1-mesa"].installed.version)
+            except:
+                pass
+
+            # Check that we're up to date
+            self.progress("Checking if Linux Mint is up to date")
             try:
                 for pkg in CHECK_UP_TO_DATE:
                     pkg = cache[pkg]
