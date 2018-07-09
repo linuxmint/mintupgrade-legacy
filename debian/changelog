@@ -1,3 +1,9 @@
+mintupgrade (18.3.11) sylvia; urgency=medium
+
+  * Don't block MESA 18.0.5 anymore.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 09 Jul 2018 12:32:10 +0200
+
 mintupgrade (18.3.10) sylvia; urgency=medium
 
   * Properly fail if MESA 18.0.5 is detected
