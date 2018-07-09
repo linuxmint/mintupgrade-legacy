@@ -98,16 +98,6 @@ class MintUpgrade():
             os.system("DEBIAN_PRIORITY=critical sudo apt-get update")
             cache = apt.Cache()
 
-            # Check MESA, 18.0.5 is causing problems (bionic only has 18.0.0 atm)
-            self.progress("Checking your version of MESA")
-            try:
-                if cache["libegl1-mesa"].installed.version.startswith("18.0.5"):
-                    self.fail("MESA 18.0.5 currently breaks the upgrade between Ubuntu 16.04 and 18.04 and Linux Mint 18.3 and Linux Mint 19. Restore a snapshot taken before MESA was upgraded to 18.0.5, or wait for Ubuntu to fix this problem.")
-                else:
-                    print(cache["libegl1-mesa"].installed.version)
-            except Exception as e:
-                pass
-
             # Check that we're up to date
             self.progress("Checking if Linux Mint is up to date")
             try:
