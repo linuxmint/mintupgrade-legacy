@@ -4,15 +4,15 @@ import sys, os, apt
 import subprocess
 import filecmp
 
-ORIGIN = "Linux Mint 18.3 'Sylvia'"
-ORIGIN_CODENAME = "sylvia"
-ORIGIN_BASE_CODENAME = "xenial"
+ORIGIN = "LMDE 2 'Betsy'"
+ORIGIN_CODENAME = "betsy"
+ORIGIN_BASE_CODENAME = "jessie"
 
-DESTINATION = "Linux Mint 19 'Tara'"
-DESTINATION_CODENAME = "tara"
-DESTINATION_BASE_CODENAME = "bionic"
+DESTINATION = "LMDE 3 'Cindy'"
+DESTINATION_CODENAME = "cindy"
+DESTINATION_BASE_CODENAME = "stretch"
 
-SUPPORTED_EDITIONS = ["cinnamon", "mate", "xfce"]
+SUPPORTED_EDITIONS = ["cinnamon"]
 
 CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg"]
 
@@ -21,7 +21,7 @@ BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup/fstab")
 
 PACKAGES_PRE_REMOVALS = []
 PACKAGES_REMOVALS = ["vino", "banshee", "gnome-user-share"]
-PACKAGES_ADDITIONS = ["rhythmbox", "libblockdev-crypto2"]
+PACKAGES_ADDITIONS = ["rhythmbox"]
 
 class bcolors:
     HEADER = '\033[95m'
