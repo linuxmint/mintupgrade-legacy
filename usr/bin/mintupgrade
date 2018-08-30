@@ -14,6 +14,8 @@ DESTINATION_BASE_CODENAME = "stretch"
 
 SUPPORTED_EDITIONS = ["cinnamon"]
 
+CHECK_ABSENT = ["gnome-media"]
+CHECK_PRESENT = ["default-jre"]
 CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg"]
 
 BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
@@ -94,6 +96,20 @@ class MintUpgrade():
                     self.fail("MDM is no longer supported in Linux Mint 19, please switch to LightDM.")
 
         if not self.points_to_destination:
+            # Check packages
+            self.progress("Checking packages")
+            cache = apt.Cache()
+            for pkg in CHECK_ABSENT:
+                if pkg in cache:
+                    pkg = cache[pkg]
+                    if pkg.is_installed:
+                        self.fail("Please remove %s. It is known to create issues with this upgrade." % pkg.name)
+            for pkg in CHECK_PRESENT:
+                if pkg in cache:
+                    pkg = cache[pkg]
+                    if not pkg.is_installed:
+                        self.fail("Please install %s. It is required for a smooth upgrade." % pkg.name)
+
             self.progress("Updating cache")
             os.system("DEBIAN_PRIORITY=critical sudo apt-get update")
             cache = apt.Cache()
