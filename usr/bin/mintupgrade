@@ -93,7 +93,7 @@ class MintUpgrade():
         if os.path.exists(dm_file):
             with open(dm_file) as dm_handle:
                 if "mdm" in dm_handle.read():
-                    self.fail("MDM is no longer supported in Linux Mint 19, please switch to LightDM.")
+                    self.fail("MDM is no longer supported in %s, please switch to LightDM." % DESTINATION)
 
         if not self.points_to_destination:
             # Check packages
