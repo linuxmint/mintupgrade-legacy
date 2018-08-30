@@ -16,7 +16,7 @@ SUPPORTED_EDITIONS = ["cinnamon"]
 
 CHECK_ABSENT = ["gnome-media"]
 CHECK_PRESENT = ["default-jre"]
-CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg"]
+CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg", "linuxmint-keyring", "debian-archive-keyring", "ubuntu-archive-keyring"]
 
 BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
 BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup/fstab")
@@ -116,13 +116,11 @@ class MintUpgrade():
 
             # Check that we're up to date
             self.progress("Checking if Linux Mint is up to date")
-            try:
-                for pkg in CHECK_UP_TO_DATE:
+            for pkg in CHECK_UP_TO_DATE:
+                if pkg in cache:
                     pkg = cache[pkg]
-                    if pkg.installed.version != pkg.candidate.version:
+                    if pkg.is_installed and pkg.installed.version != pkg.candidate.version:
                         self.fail("Your operating system is not up to date. Please apply available updates and reboot the computer.")
-            except Exception as e:
-                self.fail("Your operating system is not up to date. Please apply available updates and reboot the computer.")
 
         # Switch to the destination APT sources
         if not os.path.exists(BACKUP_APT_SOURCES):
