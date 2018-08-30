@@ -25,6 +25,8 @@ PACKAGES_PRE_REMOVALS = []
 PACKAGES_REMOVALS = ["vino", "banshee", "gnome-user-share"]
 PACKAGES_ADDITIONS = ["rhythmbox"]
 
+IMPORTANT_PACKAGES = ["cinnamon", "xplayer", "xreader", "xed", "mintsystem", "metacity", "nemo", "nemo-preview"]
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -150,6 +152,23 @@ class MintUpgrade():
         self.continue_yes_no(messages)
         os.system('DEBIAN_PRIORITY=critical sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" --assume-no')
 
+        cache = apt.Cache()
+        cache.upgrade(True)
+        changes = cache.get_changes()
+        incorrect_removals = []
+        kept_packages = []
+        for pkg in changes:
+            if pkg.is_installed:
+                if pkg.marked_keep:
+                    kept_packages.append(pkg.name)
+                elif pkg.marked_delete and pkg.name in IMPORTANT_PACKAGES:
+                    incorrect_removals.append(pkg.name)
+        if len(incorrect_removals) > 0:
+            self.restore_sources()
+            self.fail("Performing the upgrade would remove the following important packages: %s." % ", ".join(sorted(incorrect_removals)))
+        if len(kept_packages) > 0:
+            self.warn("The following packages will be kept back during the upgrade: %s. \n\nThis might or might not indicate a problem. Check the APT output above to decide whether to continue with the upgrade. If this OK you might need to update them manually after the upgrade." % ", ".join(sorted(kept_packages)))
+        
     def download(self):
         self.progress("Downloading upgrade packages")
         messages = []
