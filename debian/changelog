@@ -1,3 +1,17 @@
+mintupgrade (2.1) betsy; urgency=medium
+
+  * Adapt configuration for LMDE 2 -> LMDE 3
+  * Add package checks prior to upgrade
+  * Add keyring packages to list of pkgs that have to be up to date
+  * Rephrase MDM error
+  * Forbid removal of important packages and warn when pkgs are kept back
+  * LMDE: Install mint-info-cinnamon
+  * Fix grub title via debian-system-adjustments as well
+  * Disable mintsystem during the upgrade
+  * Switch init system to systemd
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 31 Aug 2018 15:24:28 +0100
+
 mintupgrade (18.3.11) sylvia; urgency=medium
 
   * Don't block MESA 18.0.5 anymore.
