@@ -231,6 +231,8 @@ class MintUpgrade():
         os.system("sudo rm -f /etc/polkit-1/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla")
         if os.path.exists("/usr/share/ubuntu-system-adjustments/systemd/adjust-grub-title"):
             os.system("sudo /usr/share/ubuntu-system-adjustments/systemd/adjust-grub-title")
+        elif os.path.exists("/usr/share/debian-system-adjustments/systemd/adjust-grub-title"):
+            os.system("sudo /usr/share/debian-system-adjustments/systemd/adjust-grub-title")
 
         # Restore /etc/fstab if it was changed
         if not filecmp.cmp('/etc/fstab', BACKUP_FSTAB):
