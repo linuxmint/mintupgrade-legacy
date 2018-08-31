@@ -48,11 +48,13 @@ class MintUpgrade():
         self.mint_codename = 'unknown'
         self.mint_edition = 'unknown'
         self.mint_meta = 'unknown'
+        self.mint_info = 'unknown'
         with open("/etc/linuxmint/info", "r") as info:
             for line in info:
                 line = line.strip()
                 if "EDITION=" in line:
                     self.mint_edition = line.split('=')[1].replace('"', '').split()[0]
+                    self.mint_info = "mint-info-%s" % self.mint_edition.lower()
                     self.mint_meta = "mint-meta-%s" % self.mint_edition.lower()
                 if "CODENAME=" in line:
                     self.mint_codename = line.split('=')[1].replace('"', '').split()[0]
@@ -211,6 +213,9 @@ class MintUpgrade():
         if not result:
             self.progress("An issue was detected during the upgrade, running dist-upgrade in manual mode.")
             self.check_command('sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite"', "Failed to dist-upgrade some of the packages. Please review the error message, use APT to fix the situation and try again.")
+
+        self.progress("Re-installing the info-package for your edition of Linux Mint")
+        self.check_command('sudo apt-get install --yes %s' % self.mint_info, "Failed to install %s" % self.mint_info)
 
         self.progress("Re-installing the meta-package for your edition of Linux Mint")
         self.check_command('sudo apt-get install --yes %s' % self.mint_meta, "Failed to install %s" % self.mint_meta)
