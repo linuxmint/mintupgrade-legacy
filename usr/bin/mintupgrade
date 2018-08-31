@@ -200,6 +200,9 @@ class MintUpgrade():
         messages.append("Make sure you made backups, you tested %s in live mode and you performed your favorite superstitious tricks before proceeding." % DESTINATION)
         self.continue_yes_no(messages)
 
+        # Disable mintsystem during the upgrade
+        os.system("sudo crudini --set /etc/linuxmint/mintSystem.conf global enabled False")
+
         fallback_commands = []
         fallback_commands.append("sudo dpkg --configure -a")
         fallback_commands.append("sudo apt-get install -fyq")
@@ -238,6 +241,10 @@ class MintUpgrade():
             os.system("sudo /usr/share/ubuntu-system-adjustments/systemd/adjust-grub-title")
         elif os.path.exists("/usr/share/debian-system-adjustments/systemd/adjust-grub-title"):
             os.system("sudo /usr/share/debian-system-adjustments/systemd/adjust-grub-title")
+
+        # Re-enable mintsystem
+        os.system("sudo crudini --set /etc/linuxmint/mintSystem.conf global enabled True")
+        os.system("sudo /usr/lib/linuxmint/mintsystem/mint-adjust.py")
 
         # Restore /etc/fstab if it was changed
         if not filecmp.cmp('/etc/fstab', BACKUP_FSTAB):
