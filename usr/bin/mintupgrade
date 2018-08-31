@@ -15,7 +15,9 @@ DESTINATION_BASE_CODENAME = "bionic"
 
 SUPPORTED_EDITIONS = ["cinnamon", "mate", "xfce"]
 
-CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg"]
+CHECK_ABSENT = ["gnome-media"]
+CHECK_PRESENT = ["default-jre"]
+CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg", "linuxmint-keyring", "debian-archive-keyring", "ubuntu-archive-keyring"]
 
 BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
 BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup/fstab")
@@ -23,6 +25,8 @@ BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup/fstab")
 PACKAGES_PRE_REMOVALS = []
 PACKAGES_REMOVALS = ["vino", "banshee", "gnome-user-share"]
 PACKAGES_ADDITIONS = ["rhythmbox", "libblockdev-crypto2"]
+
+IMPORTANT_PACKAGES = ["cinnamon", "xplayer", "xreader", "xed", "mintsystem", "metacity", "nemo", "nemo-preview"]
 
 # i18n
 gettext.install("mintupgrade", "/usr/share/locale", names="ngettext")
@@ -95,22 +99,34 @@ class MintUpgrade():
         if os.path.exists(dm_file):
             with open(dm_file) as dm_handle:
                 if "mdm" in dm_handle.read():
-                    self.fail(_("MDM is no longer supported in Linux Mint 19, please switch to LightDM."))
+                    self.fail(_("MDM is no longer supported in %s, please switch to LightDM.") % DESTINATION)
 
         if not self.points_to_destination:
-            self.progress(_("Updating cache"))
+            # Check packages
+            self.progress("Checking packages")
+            cache = apt.Cache()
+            for pkg in CHECK_ABSENT:
+                if pkg in cache:
+                    pkg = cache[pkg]
+                    if pkg.is_installed:
+                        self.fail("Please remove %s. It is known to create issues with this upgrade." % pkg.name)
+            for pkg in CHECK_PRESENT:
+                if pkg in cache:
+                    pkg = cache[pkg]
+                    if not pkg.is_installed:
+                        self.fail("Please install %s. It is required for a smooth upgrade." % pkg.name)
+
+            self.progress("Updating cache")
             os.system("DEBIAN_PRIORITY=critical sudo apt-get update")
             cache = apt.Cache()
 
             # Check that we're up to date
-            self.progress(_("Checking if Linux Mint is up to date"))
-            try:
-                for pkg in CHECK_UP_TO_DATE:
+            self.progress("Checking if Linux Mint is up to date")
+            for pkg in CHECK_UP_TO_DATE:
+                if pkg in cache:
                     pkg = cache[pkg]
-                    if pkg.installed.version != pkg.candidate.version:
-                        self.fail(_("Your operating system is not up to date. Please apply available updates and reboot the computer."))
-            except Exception as e:
-                self.fail(_("Your operating system is not up to date. Please apply available updates and reboot the computer."))
+                    if pkg.is_installed and pkg.installed.version != pkg.candidate.version:
+                        self.fail("Your operating system is not up to date. Please apply available updates and reboot the computer.")
 
         # Switch to the destination APT sources
         if not os.path.exists(BACKUP_APT_SOURCES):
@@ -140,6 +156,23 @@ class MintUpgrade():
         self.continue_yes_no(messages)
         os.system('DEBIAN_PRIORITY=critical sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" --assume-no')
 
+        cache = apt.Cache()
+        cache.upgrade(True)
+        changes = cache.get_changes()
+        incorrect_removals = []
+        kept_packages = []
+        for pkg in changes:
+            if pkg.is_installed:
+                if pkg.marked_keep:
+                    kept_packages.append(pkg.name)
+                elif pkg.marked_delete and pkg.name in IMPORTANT_PACKAGES:
+                    incorrect_removals.append(pkg.name)
+        if len(incorrect_removals) > 0:
+            self.restore_sources()
+            self.fail("Performing the upgrade would remove the following important packages: %s." % ", ".join(sorted(incorrect_removals)))
+        if len(kept_packages) > 0:
+            self.warn("The following packages will be kept back during the upgrade: %s. \n\nThis might or might not indicate a problem. Check the APT output above to decide whether to continue with the upgrade. If this OK you might need to update them manually after the upgrade." % ", ".join(sorted(kept_packages)))
+        
     def download(self):
         self.progress(_("Downloading upgrade packages"))
         messages = []
@@ -168,6 +201,9 @@ class MintUpgrade():
         messages.append(_("This operation is non-reversible."))
         messages.append(_("Make sure you made backups, you tested %s in live mode and you performed your favorite superstitious tricks before proceeding.") % DESTINATION)
         self.continue_yes_no(messages)
+
+        # Disable mintsystem during the upgrade
+        os.system("sudo crudini --set /etc/linuxmint/mintSystem.conf global enabled False")
 
         fallback_commands = []
         fallback_commands.append("sudo dpkg --configure -a")
@@ -202,6 +238,12 @@ class MintUpgrade():
         os.system("sudo rm -f /etc/polkit-1/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla")
         if os.path.exists("/usr/share/ubuntu-system-adjustments/systemd/adjust-grub-title"):
             os.system("sudo /usr/share/ubuntu-system-adjustments/systemd/adjust-grub-title")
+        elif os.path.exists("/usr/share/debian-system-adjustments/systemd/adjust-grub-title"):
+            os.system("sudo /usr/share/debian-system-adjustments/systemd/adjust-grub-title")
+
+        # Re-enable mintsystem
+        os.system("sudo crudini --set /etc/linuxmint/mintSystem.conf global enabled True")
+        os.system("sudo /usr/lib/linuxmint/mintsystem/mint-adjust.py")
 
         # Restore /etc/fstab if it was changed
         if not filecmp.cmp('/etc/fstab', BACKUP_FSTAB):
