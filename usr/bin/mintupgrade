@@ -103,30 +103,30 @@ class MintUpgrade():
 
         if not self.points_to_destination:
             # Check packages
-            self.progress("Checking packages")
+            self.progress(_("Checking packages"))
             cache = apt.Cache()
             for pkg in CHECK_ABSENT:
                 if pkg in cache:
                     pkg = cache[pkg]
                     if pkg.is_installed:
-                        self.fail("Please remove %s. It is known to create issues with this upgrade." % pkg.name)
+                        self.fail(_("Please remove %s. It is known to create issues with this upgrade.") % pkg.name)
             for pkg in CHECK_PRESENT:
                 if pkg in cache:
                     pkg = cache[pkg]
                     if not pkg.is_installed:
-                        self.fail("Please install %s. It is required for a smooth upgrade." % pkg.name)
+                        self.fail(_("Please install %s. It is required for a smooth upgrade.") % pkg.name)
 
-            self.progress("Updating cache")
+            self.progress(_("Updating cache"))
             os.system("DEBIAN_PRIORITY=critical sudo apt-get update")
             cache = apt.Cache()
 
             # Check that we're up to date
-            self.progress("Checking if Linux Mint is up to date")
+            self.progress(_("Checking if Linux Mint is up to date"))
             for pkg in CHECK_UP_TO_DATE:
                 if pkg in cache:
                     pkg = cache[pkg]
                     if pkg.is_installed and pkg.installed.version != pkg.candidate.version:
-                        self.fail("Your operating system is not up to date. Please apply available updates and reboot the computer.")
+                        self.fail(_("Your operating system is not up to date. Please apply available updates and reboot the computer."))
 
         # Switch to the destination APT sources
         if not os.path.exists(BACKUP_APT_SOURCES):
@@ -169,9 +169,9 @@ class MintUpgrade():
                     incorrect_removals.append(pkg.name)
         if len(incorrect_removals) > 0:
             self.restore_sources()
-            self.fail("Performing the upgrade would remove the following important packages: %s." % ", ".join(sorted(incorrect_removals)))
+            self.fail(_("Performing the upgrade would remove the following important packages: %s.") % ", ".join(sorted(incorrect_removals)))
         if len(kept_packages) > 0:
-            self.warn("The following packages will be kept back during the upgrade: %s. \n\nThis might or might not indicate a problem. Check the APT output above to decide whether to continue with the upgrade. If this OK you might need to update them manually after the upgrade." % ", ".join(sorted(kept_packages)))
+            self.warn(_("The following packages will be kept back during the upgrade: %s. \n\nThis might or might not indicate a problem. Check the APT output above to decide whether to continue with the upgrade. If this OK you might need to update them manually after the upgrade.") % ", ".join(sorted(kept_packages)))
         
     def download(self):
         self.progress(_("Downloading upgrade packages"))
@@ -249,7 +249,7 @@ class MintUpgrade():
         if not filecmp.cmp('/etc/fstab', BACKUP_FSTAB):
             os.system("cp /etc/fstab %s.upgraded" % BACKUP_FSTAB)
             os.system("sudo cp %s /etc/fstab" % BACKUP_FSTAB)
-            self.warn("A package modified /etc/fstab during the upgrade. To ensure a successful boot, the upgrader restored your original /etc/fstab and saved the modified file in %d.upgraded." % BACKUP_FSTAB)
+            self.warn(_("A package modified /etc/fstab during the upgrade. To ensure a successful boot, the upgrader restored your original /etc/fstab and saved the modified file in %d.upgraded.") % BACKUP_FSTAB)
 
         self.progress(_("The upgrade is finished. Reboot the computer with \"sudo reboot\" when ready."))
 
