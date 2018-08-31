@@ -22,8 +22,8 @@ BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
 BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup/fstab")
 
 PACKAGES_PRE_REMOVALS = []
-PACKAGES_REMOVALS = ["vino", "banshee", "gnome-user-share"]
-PACKAGES_ADDITIONS = ["rhythmbox"]
+PACKAGES_REMOVALS = ["vino", "banshee", "gnome-user-share", "systemd-shim"]
+PACKAGES_ADDITIONS = ["rhythmbox", "systemd-sysv"]
 
 IMPORTANT_PACKAGES = ["cinnamon", "xplayer", "xreader", "xed", "mintsystem", "metacity", "nemo", "nemo-preview"]
 
