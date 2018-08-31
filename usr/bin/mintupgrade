@@ -3,6 +3,7 @@
 import sys, os, apt
 import subprocess
 import filecmp
+import gettext
 
 ORIGIN = "Linux Mint 18.3 'Sylvia'"
 ORIGIN_CODENAME = "sylvia"
@@ -27,6 +28,9 @@ PACKAGES_ADDITIONS = ["rhythmbox", "libblockdev-crypto2"]
 
 IMPORTANT_PACKAGES = ["cinnamon", "xplayer", "xreader", "xed", "mintsystem", "metacity", "nemo", "nemo-preview"]
 
+# i18n
+gettext.install("mintupgrade", "/usr/share/locale", names="ngettext")
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -42,7 +46,7 @@ class MintUpgrade():
     def __init__(self):
         # Check the Mint info file
         if not os.path.exists("/etc/linuxmint/info"):
-            self.fail("Missing file '/etc/linuxmint/info'.")
+            self.fail(_("Missing file %s") % "'/etc/linuxmint/info'")
 
         # Check the edition
         self.mint_codename = 'unknown'
@@ -65,90 +69,90 @@ class MintUpgrade():
                         break
 
     def restore_sources(self):
-        self.progress("Restoring your backed up APT sources")
+        self.progress(_("Restoring your backed up APT sources"))
         if not os.path.exists(BACKUP_APT_SOURCES):
-            self.fail("Missing backup %s" % BACKUP_APT_SOURCES)
-        self.check_command("sudo mkdir -p /etc/apt/sources.list.d", "Failed to restore APT sources")
-        self.check_command("sudo rm -rf /etc/apt/sources.list.d/*", "Failed to restore APT sources")
-        self.check_command("sudo cp -R %s/* /etc/apt/" % BACKUP_APT_SOURCES, "Failed to restore APT sources")
-        self.check_command("sudo rm -rf '%s'" % BACKUP_APT_SOURCES, "Failed to restore APT sources")
+            self.fail(_("Missing backup %s") % BACKUP_APT_SOURCES)
+        self.check_command("sudo mkdir -p /etc/apt/sources.list.d", _("Failed to restore APT sources"))
+        self.check_command("sudo rm -rf /etc/apt/sources.list.d/*", _("Failed to restore APT sources"))
+        self.check_command("sudo cp -R %s/* /etc/apt/" % BACKUP_APT_SOURCES, _("Failed to restore APT sources"))
+        self.check_command("sudo rm -rf '%s'" % BACKUP_APT_SOURCES, _("Failed to restore APT sources"))
 
     def prepare(self):
         # Check codename
-        self.progress("Checking your Linux Mint codename")
+        self.progress(_("Checking your Linux Mint codename"))
         if self.mint_codename != ORIGIN_CODENAME and self.mint_codename != DESTINATION_CODENAME:
-            self.fail("Your version of Linux Mint is '%s'. Only %s can be upgraded to %s." % (self.mint_codename.capitalize(), ORIGIN, DESTINATION))
+            self.fail(_("Your version of Linux Mint is '%(codename)s'. Only %(origin)s can be upgraded to %(dest)s.") % {'codename': self.mint_codename.capitalize(), 'origin': ORIGIN, 'dest': DESTINATION})
 
         # Check edition
-        self.progress("Checking your Linux Mint edition")
+        self.progress(_("Checking your Linux Mint edition"))
         if self.mint_edition.lower() not in SUPPORTED_EDITIONS:
-            self.fail("Your edition of Linux Mint is '%s'. It cannot be upgraded to %s." % (self.mint_edition, DESTINATION))
+            self.fail(_("Your edition of Linux Mint is '%(edition)s'. It cannot be upgraded to %(dest)s.") % {'edition': self.mint_edition, 'dest': DESTINATION})
 
         # Check for timeshift configuration
-        self.progress("Checking your Timeshift configuration")
+        self.progress(_("Checking your Timeshift configuration"))
         if not os.path.exists("/etc/timeshift.json"):
-            self.fail("Please set up system snapshots. If anything goes wrong with the upgrade, snapshots will allow you to restore your operating system. Install and configure Timeshift, and create a snapshot before proceeding with the upgrade.")
+            self.fail(_("Please set up system snapshots. If anything goes wrong with the upgrade, snapshots will allow you to restore your operating system. Install and configure Timeshift, and create a snapshot before proceeding with the upgrade."))
 
         # Check display manager
-        self.progress("Checking your Display Manager")
+        self.progress(_("Checking your Display Manager"))
         dm_file = "/etc/X11/default-display-manager"
         if os.path.exists(dm_file):
             with open(dm_file) as dm_handle:
                 if "mdm" in dm_handle.read():
-                    self.fail("MDM is no longer supported in %s, please switch to LightDM." % DESTINATION)
+                    self.fail(_("MDM is no longer supported in %s, please switch to LightDM.") % DESTINATION)
 
         if not self.points_to_destination:
             # Check packages
-            self.progress("Checking packages")
+            self.progress(_("Checking packages"))
             cache = apt.Cache()
             for pkg in CHECK_ABSENT:
                 if pkg in cache:
                     pkg = cache[pkg]
                     if pkg.is_installed:
-                        self.fail("Please remove %s. It is known to create issues with this upgrade." % pkg.name)
+                        self.fail(_("Please remove %s. It is known to create issues with this upgrade.") % pkg.name)
             for pkg in CHECK_PRESENT:
                 if pkg in cache:
                     pkg = cache[pkg]
                     if not pkg.is_installed:
-                        self.fail("Please install %s. It is required for a smooth upgrade." % pkg.name)
+                        self.fail(_("Please install %s. It is required for a smooth upgrade.") % pkg.name)
 
-            self.progress("Updating cache")
+            self.progress(_("Updating cache"))
             os.system("DEBIAN_PRIORITY=critical sudo apt-get update")
             cache = apt.Cache()
 
             # Check that we're up to date
-            self.progress("Checking if Linux Mint is up to date")
+            self.progress(_("Checking if Linux Mint is up to date"))
             for pkg in CHECK_UP_TO_DATE:
                 if pkg in cache:
                     pkg = cache[pkg]
                     if pkg.is_installed and pkg.installed.version != pkg.candidate.version:
-                        self.fail("Your operating system is not up to date. Please apply available updates and reboot the computer.")
+                        self.fail(_("Your operating system is not up to date. Please apply available updates and reboot the computer."))
 
         # Switch to the destination APT sources
         if not os.path.exists(BACKUP_APT_SOURCES):
-            self.progress("Backing up your APT sources")
+            self.progress(_("Backing up your APT sources"))
             messages = []
-            messages.append("Your repositories will now be switched to point to %s." % DESTINATION)
-            messages.append("Any 3rd party repositories or PPA will be removed.")
-            messages.append("A backup of your APT sources will be written to %s." % BACKUP_APT_SOURCES)
+            messages.append(_("Your repositories will now be switched to point to %s.") % DESTINATION)
+            messages.append(_("Any 3rd party repositories or PPA will be removed."))
+            messages.append(_("A backup of your APT sources will be written to %s.") % BACKUP_APT_SOURCES)
             self.continue_yes_no(messages)
             os.system("mkdir -p %s" % BACKUP_APT_SOURCES)
             os.system("cp -R /etc/apt/sources.* %s/" % BACKUP_APT_SOURCES)
-        self.progress("Setting up the repositories for %s" % DESTINATION)
+        self.progress(_("Setting up the repositories for %s") % DESTINATION)
         if os.path.exists("/etc/apt/sources.list"):
-            self.check_command("sudo truncate --size 0 /etc/apt/sources.list", "Failed to configure APT sources")
-        self.check_command("sudo mkdir -p /etc/apt/sources.list.d", "Failed to configure APT sources")
-        self.check_command("sudo rm -rf /etc/apt/sources.list.d/*", "Failed to configure APT sources")
-        self.check_command("sudo cp /usr/share/linuxmint/mintupgrade/apt_destination_sources /etc/apt/sources.list.d/official-package-repositories.list", "Failed to configure APT sources")
-        self.check_command("DEBIAN_PRIORITY=critical sudo apt-get update", "Failed to configure APT sources")
+            self.check_command("sudo truncate --size 0 /etc/apt/sources.list", _("Failed to configure APT sources"))
+        self.check_command("sudo mkdir -p /etc/apt/sources.list.d", _("Failed to configure APT sources"))
+        self.check_command("sudo rm -rf /etc/apt/sources.list.d/*", _("Failed to configure APT sources"))
+        self.check_command("sudo cp /usr/share/linuxmint/mintupgrade/apt_destination_sources /etc/apt/sources.list.d/official-package-repositories.list", _("Failed to configure APT sources"))
+        self.check_command("DEBIAN_PRIORITY=critical sudo apt-get update", _("Failed to configure APT sources"))
 
     def check(self):
-        self.progress("Simulating an upgrade")
+        self.progress(_("Simulating an upgrade"))
         messages = []
-        messages.append("APT will now calculate the package changes necessary to upgrade to %s." % DESTINATION)
-        messages.append("If conflicts are detected and APT is unable to perform the upgrade, take note of the packages causing the issue, remove them, and re-install them after the upgrade.")
-        messages.append("Pay close attention to what appears on the screen, and review the list of packages being REMOVED during the upgrade.")
-        messages.append("Take note of the packages being removed, so you can eventually reinstall them after the upgrade.")
+        messages.append(_("APT will now calculate the package changes necessary to upgrade to %s.") % DESTINATION)
+        messages.append(_("If conflicts are detected and APT is unable to perform the upgrade, take note of the packages causing the issue, remove them, and re-install them after the upgrade."))
+        messages.append(_("Pay close attention to what appears on the screen, and review the list of packages being REMOVED during the upgrade."))
+        messages.append(_("Take note of the packages being removed, so you can eventually reinstall them after the upgrade."))
         self.continue_yes_no(messages)
         os.system('DEBIAN_PRIORITY=critical sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" --assume-no')
 
@@ -165,37 +169,37 @@ class MintUpgrade():
                     incorrect_removals.append(pkg.name)
         if len(incorrect_removals) > 0:
             self.restore_sources()
-            self.fail("Performing the upgrade would remove the following important packages: %s." % ", ".join(sorted(incorrect_removals)))
+            self.fail(_("Performing the upgrade would remove the following important packages: %s.") % ", ".join(sorted(incorrect_removals)))
         if len(kept_packages) > 0:
-            self.warn("The following packages will be kept back during the upgrade: %s. \n\nThis might or might not indicate a problem. Check the APT output above to decide whether to continue with the upgrade. If this OK you might need to update them manually after the upgrade." % ", ".join(sorted(kept_packages)))
+            self.warn(_("The following packages will be kept back during the upgrade: %s. \n\nThis might or might not indicate a problem. Check the APT output above to decide whether to continue with the upgrade. If this OK you might need to update them manually after the upgrade.") % ", ".join(sorted(kept_packages)))
         
     def download(self):
-        self.progress("Downloading upgrade packages")
+        self.progress(_("Downloading upgrade packages"))
         messages = []
-        messages.append("APT will now download the package updates necessary for the upgrade to %s." % DESTINATION)
+        messages.append(_("APT will now download the package updates necessary for the upgrade to %s.") % DESTINATION)
         self.continue_yes_no(messages)
-        self.check_command("DEBIAN_PRIORITY=critical sudo apt-get dist-upgrade --download-only --yes", "Failed to download packages for the upgrade.")
+        self.check_command("DEBIAN_PRIORITY=critical sudo apt-get dist-upgrade --download-only --yes", _("Failed to download packages for the upgrade."))
 
     def upgrade(self):
         if self.mint_edition.lower() == "cinnamon":
-            self.progress("Disabling the Cinnamon screensaver")
+            self.progress(_("Disabling the Cinnamon screensaver"))
             os.system("killall cinnamon-screensaver")
         elif self.mint_edition.lower() == "mate":
-            self.progress("Disabling the MATE screensaver")
+            self.progress(_("Disabling the MATE screensaver"))
             os.system("killall mate-screensaver")
 
-        self.progress("Saving /etc/fstab")
+        self.progress(_("Saving /etc/fstab"))
         os.system("cp /etc/fstab %s" % BACKUP_FSTAB)
 
-        self.progress("Removing blacklisted packages")
+        self.progress(_("Removing blacklisted packages"))
         for removal in PACKAGES_PRE_REMOVALS:
             os.system('sudo apt-get remove --yes %s' % removal) # The return code indicates a failure if some packages were not found, so ignore it.
 
-        self.progress("Performing upgrade")
+        self.progress(_("Performing upgrade"))
         messages = []
-        messages.append("APT will perform the upgrade to %s." % DESTINATION)
-        messages.append("This operation is non-reversible.")
-        messages.append("Make sure you made backups, you tested %s in live mode and you performed your favorite superstitious tricks before proceeding." % DESTINATION)
+        messages.append(_("APT will perform the upgrade to %s.") % DESTINATION)
+        messages.append(_("This operation is non-reversible."))
+        messages.append(_("Make sure you made backups, you tested %s in live mode and you performed your favorite superstitious tricks before proceeding.") % DESTINATION)
         self.continue_yes_no(messages)
 
         # Disable mintsystem during the upgrade
@@ -207,28 +211,28 @@ class MintUpgrade():
 
         result = self.try_command(5, 'DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical sudo apt-get upgrade -fyq -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite"', fallback_commands)
         if not result:
-            self.progress("An issue was detected during the upgrade, running the upgrade in manual mode.")
-            self.check_command('sudo apt-get upgrade -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite"', "Failed to upgrade some of the packages. Please review the error message, use APT to fix the situation and try again.")
+            self.progress(_("An issue was detected during the upgrade, running the upgrade in manual mode."))
+            self.check_command('sudo apt-get upgrade -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite"', _("Failed to upgrade some of the packages. Please review the error message, use APT to fix the situation and try again."))
 
         result = self.try_command(5, 'DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical sudo apt-get dist-upgrade -fyq -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite"', fallback_commands)
         if not result:
-            self.progress("An issue was detected during the upgrade, running dist-upgrade in manual mode.")
-            self.check_command('sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite"', "Failed to dist-upgrade some of the packages. Please review the error message, use APT to fix the situation and try again.")
+            self.progress(_("An issue was detected during the upgrade, running dist-upgrade in manual mode."))
+            self.check_command('sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite"', _("Failed to dist-upgrade some of the packages. Please review the error message, use APT to fix the situation and try again."))
 
-        self.progress("Re-installing the meta-package for your edition of Linux Mint")
-        self.check_command('sudo apt-get install --yes %s' % self.mint_meta, "Failed to install %s" % self.mint_meta)
+        self.progress(_("Re-installing the meta-package for your edition of Linux Mint"))
+        self.check_command('sudo apt-get install --yes %s' % self.mint_meta, _("Failed to install %s") % self.mint_meta)
 
-        self.progress("Re-installing the multimedia codecs")
-        self.check_command('sudo apt-get install --yes mint-meta-codecs', "Failed to install mint-meta-codecs")
+        self.progress(_("Re-installing the multimedia codecs"))
+        self.check_command('sudo apt-get install --yes mint-meta-codecs', _("Failed to install mint-meta-codecs"))
 
-        self.progress("Installing new packages")
-        self.check_command('sudo apt-get install --yes %s' % " ".join(PACKAGES_ADDITIONS), "Failed to install additional packages.")
+        self.progress(_("Installing new packages"))
+        self.check_command('sudo apt-get install --yes %s' % " ".join(PACKAGES_ADDITIONS), _("Failed to install additional packages."))
 
-        self.progress("Removing obsolete packages")
+        self.progress(_("Removing obsolete packages"))
         for removal in PACKAGES_REMOVALS:
             os.system('sudo apt-get purge --yes %s' % removal) # The return code indicates a failure if some packages were not found, so ignore it.
 
-        self.progress("Performing system adjustments")
+        self.progress(_("Performing system adjustments"))
         os.system("sudo rm -f /etc/systemd/logind.conf")
         os.system("apt install --reinstall -o Dpkg::Options::=\"--force-confmiss\" systemd")
         os.system("sudo rm -f /etc/polkit-1/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla")
@@ -245,9 +249,9 @@ class MintUpgrade():
         if not filecmp.cmp('/etc/fstab', BACKUP_FSTAB):
             os.system("cp /etc/fstab %s.upgraded" % BACKUP_FSTAB)
             os.system("sudo cp %s /etc/fstab" % BACKUP_FSTAB)
-            self.warn("A package modified /etc/fstab during the upgrade. To ensure a successful boot, the upgrader restored your original /etc/fstab and saved the modified file in %d.upgraded." % BACKUP_FSTAB)
+            self.warn(_("A package modified /etc/fstab during the upgrade. To ensure a successful boot, the upgrader restored your original /etc/fstab and saved the modified file in %d.upgraded.") % BACKUP_FSTAB)
 
-        self.progress("The upgrade is finished. Reboot the computer with \"sudo reboot\" when ready.")
+        self.progress(_("The upgrade is finished. Reboot the computer with \"sudo reboot\" when ready."))
 
     def check_command(self, command, message):
         ret = os.system(command)
@@ -260,15 +264,15 @@ class MintUpgrade():
             ret = os.system(command)
             if ret == 0:
                 return True
-            self.progress("Error detected on try #%d, running fallback commands" % (i+1))
+            self.progress(_("Error detected on try #%d, running fallback commands") % (i+1))
             for fallback_command in fallback_commands:
                 os.system(command)
 
     def fail(self, message):
         print ("")
         print ("------------------------------------------------")
-        print ("%s!!  ERROR: %s%s" % (bcolors.FAIL, message, bcolors.ENDC))
-        print ("!!  Exiting.")
+        print (("%s!!  " + _("ERROR:") + " %s%s") % (bcolors.FAIL, message, bcolors.ENDC))
+        print ("!!  " + _("Exiting."))
         print ("------------------------------------------------")
         print ("")
         sys.exit(1)
@@ -281,9 +285,9 @@ class MintUpgrade():
         print ("")
         answer = None
         while (answer not in ["y", "yes", "n", "no"]):
-            answer = input("%s    Do you want to continue? [y/n]:%s " % (bcolors.OKGREEN, bcolors.ENDC)).lower()
+            answer = input(("%s    " + _("Do you want to continue?") + " [y/n]:%s ") % (bcolors.OKGREEN, bcolors.ENDC)).lower()
         if answer in ["n", "no"]:
-            print ("Exiting.")
+            print (_("Exiting."))
             sys.exit(0)
 
     def progress(self, message):
@@ -296,15 +300,15 @@ class MintUpgrade():
 
 def usage():
     print ("")
-    print ("%sUsage:%s mintupgrade command" % (bcolors.HEADER, bcolors.ENDC))
+    print (("%s" + _("Usage:") + "%s " + _("mintupgrade command")) % (bcolors.HEADER, bcolors.ENDC))
     print ("")
-    print ("%sCommands:%s" % (bcolors.HEADER, bcolors.ENDC))
-    print ("  help                   - prints this usage note")
-    print ("  check                  - checks the upgrade to %s" % DESTINATION)
-    print ("  prepare                - prepares the upgrade to %s" % DESTINATION)
-    print ("  download               - downloads the packages for the upgrade to %s" % DESTINATION)
-    print ("  upgrade                - upgrades to %s" % DESTINATION)
-    print ("  restore-sources        - restores the backed up APT sources (only use this command if you're still running %s)" % ORIGIN)
+    print (("%s" + _("Commands:") + "%s") % (bcolors.HEADER, bcolors.ENDC))
+    print ("  help                   - " + _("prints this usage note"))
+    print ("  check                  - " + _("checks the upgrade to %s") % DESTINATION)
+    print ("  prepare                - " + _("prepares the upgrade to %s") % DESTINATION)
+    print ("  download               - " + _("downloads the packages for the upgrade to %s") % DESTINATION)
+    print ("  upgrade                - " + _("upgrades to %s") % DESTINATION)
+    print ("  restore-sources        - " + _("restores the backed up APT sources (only use this command if you're still running %s)") % ORIGIN)
     print ("")
     sys.exit(0)
 
@@ -312,7 +316,7 @@ if __name__ == '__main__':
 
     if os.getuid() == 0:
         print ("")
-        print ("Please don't run this command as root or with elevated privileges.")
+        print (_("Please don't run this command as root or with elevated privileges."))
         print ("")
         sys.exit(1)
 
