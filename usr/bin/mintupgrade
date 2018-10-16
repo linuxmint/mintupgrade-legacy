@@ -14,7 +14,7 @@ DESTINATION_BASE_CODENAME = "stretch"
 
 SUPPORTED_EDITIONS = ["cinnamon"]
 
-CHECK_ABSENT = ["gnome-media"]
+CHECK_ABSENT = ["gnome-media", "unattended-upgrades"]
 CHECK_PRESENT = ["default-jre"]
 CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg", "linuxmint-keyring", "debian-archive-keyring", "ubuntu-archive-keyring"]
 
