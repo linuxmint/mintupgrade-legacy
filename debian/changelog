@@ -1,3 +1,9 @@
+mintupgrade (2.2) betsy; urgency=medium
+
+  * Check that unattended-upgrades is absent pre-upgrade
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 16 Oct 2018 16:28:35 +0100
+
 mintupgrade (2.1) betsy; urgency=medium
 
   * Adapt configuration for LMDE 2 -> LMDE 3
