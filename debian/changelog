@@ -1,3 +1,9 @@
+mintupgrade (2.3) betsy; urgency=medium
+
+  * Fix typo preventing fallback commands from being run
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 20 Feb 2019 22:18:14 +0000
+
 mintupgrade (2.2) betsy; urgency=medium
 
   * Check that unattended-upgrades is absent pre-upgrade
