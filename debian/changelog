@@ -1,3 +1,9 @@
+mintupgrade (18.3.12) sylvia; urgency=medium
+
+  * Fix typo preventing fallback commands from being run
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 20 Feb 2019 22:14:57 +0000
+
 mintupgrade (18.3.11) sylvia; urgency=medium
 
   * Don't block MESA 18.0.5 anymore.
