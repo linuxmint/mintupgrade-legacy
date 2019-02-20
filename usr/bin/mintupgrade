@@ -262,7 +262,8 @@ class MintUpgrade():
                 return True
             self.progress("Error detected on try #%d, running fallback commands" % (i+1))
             for fallback_command in fallback_commands:
-                os.system(command)
+                self.progress ("Running '%s'" % fallback_command)
+                os.system(fallback_command)
 
     def fail(self, message):
         print ("")
