@@ -1,3 +1,16 @@
+mintupgrade (2020.03.17) cindy; urgency=medium
+
+  * Add package checks prior to upgrade
+  * Add keyring packages to list of pkgs that have to be up to date
+  * Rephrase MDM error
+  * Forbid removal of important packages and warn when pkgs are kept back
+  * Fix grub title via debian-system-adjustments as well
+  * Disable mintsystem during the upgrade
+  * Fix typo preventing fallback commands from being run
+  * Prepare upgrade LMDE 3 -> LMDE 4
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 17 Mar 2020 12:15:42 +0000
+
 mintupgrade (18.3.11) sylvia; urgency=medium
 
   * Don't block MESA 18.0.5 anymore.
