@@ -22,8 +22,8 @@ BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
 BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup/fstab")
 
 PACKAGES_PRE_REMOVALS = []
-PACKAGES_REMOVALS = ["vino", "banshee", "gnome-user-share"]
-PACKAGES_ADDITIONS = ["rhythmbox", "libblockdev-crypto2"]
+PACKAGES_REMOVALS = ["tomboy", "libxplayer-plparser18", "xplayer-common", "gksu"]
+PACKAGES_ADDITIONS = ["neofetch", "ffmpegthumbnailer", "amd64-microcode", "i386-microcode", "celluloid", "drawing", "gnote", "grub2-theme-mint"]
 
 IMPORTANT_PACKAGES = ["cinnamon", "xplayer", "xreader", "xed", "mintsystem", "metacity", "nemo", "nemo-preview"]
 
