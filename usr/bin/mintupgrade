@@ -126,7 +126,7 @@ class MintUpgrade():
                 if pkg.is_installed and "-dmo" in pkg.installed.version:
                     dmo_packages.append(pkg.name)
             if len(dmo_packages) > 0:
-                self.fail("The following packages come from the Unofficial Debian Multimedia repository: \n\n     %s.\n\nLaunch mintsources and go to the \"Maintenance tab\". First, use \"Downgrade Foreign Packages\" to downgrade all the packages which contain '-dmo' in their version number. Then, use \"Remove Foreign Packages\" to remove any remaining packages with '-dmo' in their version number." % ", ".join(dmo_packages))
+                self.fail("The following packages come from the Unofficial Debian Multimedia repository: \n\n     %s.\n\nLaunch mintsources and go to the \"Maintenance tab\".\nFirst, use \"Downgrade Foreign Packages\" to downgrade all the packages which contain '-dmo' in their version number.\nThen, use \"Remove Foreign Packages\" to remove any remaining packages with '-dmo' in their version number.\n" % ", ".join(dmo_packages))
 
             # Check that we're up to date
             self.progress("Checking if Linux Mint is up to date")
