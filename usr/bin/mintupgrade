@@ -14,7 +14,7 @@ DESTINATION_BASE_CODENAME = "buster"
 
 SUPPORTED_EDITIONS = ["cinnamon"]
 
-CHECK_ABSENT = ["libgstreamer-plugins-bad1.0-0", "libreoffice-sdbc-hsqldb"]
+CHECK_ABSENT = ["libservlet3.1-java"]
 CHECK_PRESENT = ["default-jre"]
 CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg", "linuxmint-keyring", "debian-archive-keyring"]
 
