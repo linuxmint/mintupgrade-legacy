@@ -101,16 +101,22 @@ class MintUpgrade():
             # Check packages
             self.progress("Checking packages")
             cache = apt.Cache()
+            need_to_remove = []
             for pkg in CHECK_ABSENT:
                 if pkg in cache:
                     pkg = cache[pkg]
                     if pkg.is_installed:
-                        self.fail("Please remove %s. It is known to create issues with this upgrade." % pkg.name)
+                        need_to_remove.append(pkg.name)
+            if len(need_to_remove) > 0:
+                self.fail("The following packages create issues with this upgrade, please remove them: %s" % ", ".join(need_to_remove))
+            need_to_install = []
             for pkg in CHECK_PRESENT:
                 if pkg in cache:
                     pkg = cache[pkg]
                     if not pkg.is_installed:
-                        self.fail("Please install %s. It is required for a smooth upgrade." % pkg.name)
+                        need_to_install.append(pkg.name)
+            if len(need_to_remove) > 0:
+                self.fail("The following packages are required for a smooth install, please install them: %s" % ", ".join(need_to_install))
 
             self.progress("Updating cache")
             os.system("DEBIAN_PRIORITY=critical sudo apt-get update")
