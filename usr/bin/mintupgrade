@@ -230,6 +230,11 @@ class MintUpgrade():
         self.progress("Re-installing the meta-package for your edition of Linux Mint")
         self.check_command('sudo apt-get install --yes %s' % self.mint_meta, "Failed to install %s" % self.mint_meta)
 
+        # Enable APT recommends
+        self.progress("Re-enabling APT recommends")
+        if os.path.exists("/etc/apt/apt.conf.d/00recommends"):
+            os.system("rm -f /etc/apt/apt.conf.d/00recommends")
+
         self.progress("Re-installing the multimedia codecs")
         self.check_command('sudo apt-get install --yes mint-meta-codecs', "Failed to install mint-meta-codecs")
 
