@@ -4,19 +4,19 @@ import sys, os, apt
 import subprocess
 import filecmp
 
-ORIGIN = "Linux Mint 18.3 'Sylvia'"
-ORIGIN_CODENAME = "sylvia"
-ORIGIN_BASE_CODENAME = "xenial"
+ORIGIN = "LMDE 3 'Cindy'"
+ORIGIN_CODENAME = "cindy"
+ORIGIN_BASE_CODENAME = "stretch"
 
-DESTINATION = "Linux Mint 19 'Tara'"
-DESTINATION_CODENAME = "tara"
-DESTINATION_BASE_CODENAME = "bionic"
+DESTINATION = "LMDE 4 'Debbie'"
+DESTINATION_CODENAME = "debbie"
+DESTINATION_BASE_CODENAME = "buster"
 
-SUPPORTED_EDITIONS = ["cinnamon", "mate", "xfce"]
+SUPPORTED_EDITIONS = ["cinnamon"]
 
-CHECK_ABSENT = ["gnome-media"]
+CHECK_ABSENT = ["libgstreamer-plugins-bad1.0-0", "libreoffice-sdbc-hsqldb"]
 CHECK_PRESENT = ["default-jre"]
-CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg", "linuxmint-keyring", "debian-archive-keyring", "ubuntu-archive-keyring"]
+CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg", "linuxmint-keyring", "debian-archive-keyring"]
 
 BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
 BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup/fstab")
