@@ -40,6 +40,9 @@ class bcolors:
 class MintUpgrade():
 
     def __init__(self):
+
+        self.reversible = True
+
         # Check the Mint info file
         if not os.path.exists("/etc/linuxmint/info"):
             self.fail("Missing file '/etc/linuxmint/info'.")
@@ -65,13 +68,13 @@ class MintUpgrade():
                         break
 
     def restore_sources(self):
+        self.reversible = False
         self.progress("Restoring your backed up APT sources")
-        if not os.path.exists(BACKUP_APT_SOURCES):
-            self.fail("Missing backup %s" % BACKUP_APT_SOURCES)
-        self.check_command("sudo mkdir -p /etc/apt/sources.list.d", "Failed to restore APT sources")
-        self.check_command("sudo rm -rf /etc/apt/sources.list.d/*", "Failed to restore APT sources")
-        self.check_command("sudo cp -R %s/* /etc/apt/" % BACKUP_APT_SOURCES, "Failed to restore APT sources")
-        self.check_command("sudo rm -rf '%s'" % BACKUP_APT_SOURCES, "Failed to restore APT sources")
+        if os.path.exists(BACKUP_APT_SOURCES):
+            self.check_command("sudo mkdir -p /etc/apt/sources.list.d", "Failed to restore APT sources")
+            self.check_command("sudo rm -rf /etc/apt/sources.list.d/*", "Failed to restore APT sources")
+            self.check_command("sudo cp -R %s/* /etc/apt/" % BACKUP_APT_SOURCES, "Failed to restore APT sources")
+            self.check_command("sudo rm -rf '%s'" % BACKUP_APT_SOURCES, "Failed to restore APT sources")
 
     def prepare(self):
         # Check codename
@@ -213,6 +216,8 @@ class MintUpgrade():
         messages.append("Make sure you made backups, you tested %s in live mode and you performed your favorite superstitious tricks before proceeding." % DESTINATION)
         self.continue_yes_no(messages)
 
+        self.reversible = False
+
         # Disable mintsystem during the upgrade
         os.system("sudo crudini --set /etc/linuxmint/mintSystem.conf global enabled False")
 
@@ -292,6 +297,8 @@ class MintUpgrade():
         print ("!!  Exiting.")
         print ("------------------------------------------------")
         print ("")
+        if self.reversible:
+            self.restore_sources()
         sys.exit(1)
 
     def continue_yes_no(self, messages):
@@ -305,6 +312,8 @@ class MintUpgrade():
             answer = input("%s    Do you want to continue? [y/n]:%s " % (bcolors.OKGREEN, bcolors.ENDC)).lower()
         if answer in ["n", "no"]:
             print ("Exiting.")
+            if self.reversible:
+                self.restore_sources()
             sys.exit(0)
 
     def progress(self, message):
