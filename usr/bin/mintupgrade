@@ -257,6 +257,11 @@ class MintUpgrade():
         os.system("sudo rm -f /etc/systemd/logind.conf")
         os.system("apt install --reinstall -o Dpkg::Options::=\"--force-confmiss\" systemd")
         os.system("sudo rm -f /etc/polkit-1/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla")
+
+        # Re-enable the plymouth theme (specific to LMDE)
+        os.system("sudo plymouth-set-default-theme mint-logo")
+        os.system("sudo update-initramfs -u")
+
         if os.path.exists("/usr/share/ubuntu-system-adjustments/systemd/adjust-grub-title"):
             os.system("sudo /usr/share/ubuntu-system-adjustments/systemd/adjust-grub-title")
         elif os.path.exists("/usr/share/debian-system-adjustments/systemd/adjust-grub-title"):
