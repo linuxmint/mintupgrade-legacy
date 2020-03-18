@@ -14,14 +14,14 @@ DESTINATION_BASE_CODENAME = "buster"
 
 SUPPORTED_EDITIONS = ["cinnamon"]
 
-CHECK_ABSENT = ["libservlet3.1-java"]
+CHECK_ABSENT = []
 CHECK_PRESENT = ["default-jre"]
 CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg", "linuxmint-keyring", "debian-archive-keyring", "mintsystem"]
 
 BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
 BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup/fstab")
 
-PACKAGES_PRE_REMOVALS = []
+PACKAGES_PRE_REMOVALS = ["libservlet3.1-java"]
 PACKAGES_REMOVALS = ["tomboy", "libxplayer-plparser18", "xplayer-common", "gksu"]
 PACKAGES_ADDITIONS = ["neofetch", "ffmpegthumbnailer", "amd64-microcode", "i386-microcode", "celluloid", "drawing", "gnote", "grub2-theme-mint"]
 
