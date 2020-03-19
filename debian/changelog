@@ -1,3 +1,26 @@
+mintupgrade (2020.03.19) debbie; urgency=medium
+
+  * Improve CHECK_ABSENT and CHECK_PRESENT tests
+  * Remove check on MDM
+  * Update pkgs in CHECK_ABSENT
+  * Add checks to ensure purge of deb-multimedia.org prior to upgrade
+  * Edit the error message for dmo packages
+  * Add mintsystem to CHECK_UP_TO_DATE
+  * Update pkg additions/removals
+  * Enable APT recommends post-upgrade
+  * Update APT destination sources
+  * Use Pre-removal for the problematic servlet pkg
+  * DMO check: Also test source pkg name
+  * Restore APT sources on failure or when user wants to stop
+  * Check: Run apt update twice if it fails the first time
+  * Fix typo on intel-microcode pkg
+  * Add missing sudo to remove APT config file
+  * Remove xplayer from IMPORTANT_PACKAGES
+  * Remove memtest86+
+  * Reset the plymouth theme
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 19 Mar 2020 11:08:42 +0000
+
 mintupgrade (2020.03.17) cindy; urgency=medium
 
   * Add package checks prior to upgrade
