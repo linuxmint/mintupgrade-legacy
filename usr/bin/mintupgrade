@@ -14,14 +14,14 @@ DESTINATION_BASE_CODENAME = "buster"
 
 SUPPORTED_EDITIONS = ["cinnamon"]
 
-CHECK_ABSENT = []
+CHECK_ABSENT = ["libservlet3.1-java"]
 CHECK_PRESENT = ["default-jre"]
 CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg", "linuxmint-keyring", "debian-archive-keyring", "mintsystem"]
 
 BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
 BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup/fstab")
 
-PACKAGES_PRE_REMOVALS = ["libservlet3.1-java"]
+PACKAGES_PRE_REMOVALS = []
 PACKAGES_REMOVALS = ["tomboy", "libxplayer-plparser18", "xplayer-common", "gksu", "memtest86+"]
 PACKAGES_ADDITIONS = ["neofetch", "ffmpegthumbnailer", "amd64-microcode", "intel-microcode", "celluloid", "drawing", "gnote", "grub2-theme-mint"]
 
@@ -186,7 +186,7 @@ class MintUpgrade():
             self.fail("Performing the upgrade would remove the following important packages: %s." % ", ".join(sorted(incorrect_removals)))
         if len(kept_packages) > 0:
             self.warn("The following packages will be kept back during the upgrade: %s. \n\nThis might or might not indicate a problem. Check the APT output above to decide whether to continue with the upgrade. If this OK you might need to update them manually after the upgrade." % ", ".join(sorted(kept_packages)))
-        
+
     def download(self):
         self.progress("Downloading upgrade packages")
         messages = []
