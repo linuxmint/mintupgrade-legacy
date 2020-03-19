@@ -1,3 +1,9 @@
+mintupgrade (2020.03.19.1) debbie; urgency=medium
+
+  * Move back libservlet3.1-java to CHECK_ABSENT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 19 Mar 2020 16:55:00 +0000
+
 mintupgrade (2020.03.19) debbie; urgency=medium
 
   * Improve CHECK_ABSENT and CHECK_PRESENT tests
