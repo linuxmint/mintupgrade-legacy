@@ -18,8 +18,8 @@ CHECK_ABSENT = ["libservlet3.1-java"]
 CHECK_PRESENT = ["default-jre"]
 CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg", "linuxmint-keyring", "debian-archive-keyring", "mintsystem"]
 
-BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup/APT/")
-BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup/fstab")
+BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup-%s/APT/" % ORIGIN_CODENAME)
+BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup-%s/fstab" % ORIGIN_CODENAME)
 
 PACKAGES_PRE_REMOVALS = []
 PACKAGES_REMOVALS = ["tomboy", "libxplayer-plparser18", "xplayer-common", "gksu", "memtest86+"]
