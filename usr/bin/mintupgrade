@@ -4,25 +4,29 @@ import sys, os, apt
 import subprocess
 import filecmp
 
-ORIGIN = "LMDE 3 'Cindy'"
-ORIGIN_CODENAME = "cindy"
-ORIGIN_BASE_CODENAME = "stretch"
+ORIGIN = "Linux Mint 19.3 'Tricia'"
+ORIGIN_CODENAME = "tricia"
+ORIGIN_BASE_CODENAME = "bionic"
 
-DESTINATION = "LMDE 4 'Debbie'"
-DESTINATION_CODENAME = "debbie"
-DESTINATION_BASE_CODENAME = "buster"
+DESTINATION = "Linux Mint 20 'Ulyana'"
+DESTINATION_CODENAME = "ulyana"
+DESTINATION_BASE_CODENAME = "focal"
 
 SUPPORTED_EDITIONS = ["cinnamon"]
 
 CHECK_ABSENT = ["libservlet3.1-java"]
+# removes when you uninstall ^
+#libhsqldb1.8.0-java libreoffice-sdbc-hsqldb libservlet3.1-java
+
+
 CHECK_PRESENT = ["default-jre"]
-CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg", "linuxmint-keyring", "debian-archive-keyring", "mintsystem"]
+CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg", "linuxmint-keyring", "ubuntu-keyring", "mintsystem"]
 
 BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup-%s/APT/" % ORIGIN_CODENAME)
 BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup-%s/fstab" % ORIGIN_CODENAME)
 
 PACKAGES_PRE_REMOVALS = []
-PACKAGES_REMOVALS = ["tomboy", "libxplayer-plparser18", "xplayer-common", "gksu", "memtest86+"]
+PACKAGES_REMOVALS = ["tomboy", "libxplayer-plparser18", "xplayer-common", "gksu", "memtest86+", "*hwe-18.04"]
 PACKAGES_ADDITIONS = ["neofetch", "ffmpegthumbnailer", "amd64-microcode", "intel-microcode", "celluloid", "drawing", "gnote", "grub2-theme-mint"]
 
 IMPORTANT_PACKAGES = ["cinnamon", "xreader", "xed", "mintsystem", "metacity", "nemo", "nemo-preview"]
@@ -110,29 +114,29 @@ class MintUpgrade():
                     pkg = cache[pkg]
                     if not pkg.is_installed:
                         need_to_install.append(pkg.name)
-            if len(need_to_remove) > 0:
+            if len(need_to_install) > 0:
                 self.fail("The following packages are required for a smooth install, please install them: %s" % ", ".join(need_to_install))
 
             self.progress("Updating cache")
             os.system("DEBIAN_PRIORITY=critical sudo apt-get update")
             cache = apt.Cache()
 
-            # Check that we don't have any Debian Multimedia packages
-            self.progress("Checking deb-multimedia.org repository")
-            output = subprocess.check_output("apt policy", shell=True).decode("UTF-8")
-            if "deb-multimedia.org" in output:
-                self.fail("The Unofficial Debian Multimedia repository (https://deb-multimedia.org) is no longer used in LMDE 4. Please remove it from your APT configuration (usually in /etc/apt/sources.list.d/official-package-repositories.list).")
+            # # Check that we don't have any Debian Multimedia packages
+            # self.progress("Checking deb-multimedia.org repository")
+            # output = subprocess.check_output("apt policy", shell=True).decode("UTF-8")
+            # if "deb-multimedia.org" in output:
+            #     self.fail("The Unofficial Debian Multimedia repository (https://deb-multimedia.org) is no longer used in LMDE 4. Please remove it from your APT configuration (usually in /etc/apt/sources.list.d/official-package-repositories.list).")
 
-            self.progress("Checking deb-multimedia.org packages")
-            dmo_packages = []
-            for pkg in cache:
-                if pkg.is_installed:
-                    if "-dmo" in pkg.installed.version:
-                        dmo_packages.append(pkg.name)
-                    if pkg.installed.source_name.endswith("-dmo"):
-                        dmo_packages.append(pkg.name)
-            if len(dmo_packages) > 0:
-                self.fail("The following packages come from the Unofficial Debian Multimedia repository: \n\n     %s.\n\nLaunch mintsources and go to the \"Maintenance tab\".\nFirst, use \"Downgrade Foreign Packages\" to downgrade all the packages.\nThen, use \"Remove Foreign Packages\" to remove any remaining packages with '-dmo' in their version number.\n" % ", ".join(dmo_packages))
+            # self.progress("Checking deb-multimedia.org packages")
+            # dmo_packages = []
+            # for pkg in cache:
+            #     if pkg.is_installed:
+            #         if "-dmo" in pkg.installed.version:
+            #             dmo_packages.append(pkg.name)
+            #         if pkg.installed.source_name.endswith("-dmo"):
+            #             dmo_packages.append(pkg.name)
+            # if len(dmo_packages) > 0:
+            #     self.fail("The following packages come from the Unofficial Debian Multimedia repository: \n\n     %s.\n\nLaunch mintsources and go to the \"Maintenance tab\".\nFirst, use \"Downgrade Foreign Packages\" to downgrade all the packages.\nThen, use \"Remove Foreign Packages\" to remove any remaining packages with '-dmo' in their version number.\n" % ", ".join(dmo_packages))
 
             # Check that we're up to date
             self.progress("Checking if Linux Mint is up to date")
@@ -197,7 +201,7 @@ class MintUpgrade():
     def upgrade(self):
         if self.mint_edition.lower() == "cinnamon":
             self.progress("Disabling the Cinnamon screensaver")
-            os.system("killall cinnamon-screensaver")
+            os.system("killall cinnamon-screensaver") ## this is dbus activated, so killing it is no guarantee of it staying dead.
         elif self.mint_edition.lower() == "mate":
             self.progress("Disabling the MATE screensaver")
             os.system("killall mate-screensaver")
@@ -259,8 +263,8 @@ class MintUpgrade():
         os.system("sudo rm -f /etc/polkit-1/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla")
 
         # Re-enable the plymouth theme (specific to LMDE)
-        os.system("sudo plymouth-set-default-theme mint-logo")
-        os.system("sudo update-initramfs -u")
+        # os.system("sudo plymouth-set-default-theme mint-logo")
+        # os.system("sudo update-initramfs -u")
 
         if os.path.exists("/usr/share/ubuntu-system-adjustments/systemd/adjust-grub-title"):
             os.system("sudo /usr/share/ubuntu-system-adjustments/systemd/adjust-grub-title")
