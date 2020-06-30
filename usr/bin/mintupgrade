@@ -77,6 +77,7 @@ class MintUpgrade():
     def restore_sources(self):
         self.reversible = False
         self.progress("Restoring your backed up APT sources")
+        print("")
         if os.path.exists(BACKUP_APT_SOURCES):
             self.check_command("sudo mkdir -p /etc/apt/sources.list.d", "Failed to restore APT sources")
             self.check_command("sudo rm -rf /etc/apt/sources.list.d/*", "Failed to restore APT sources")
@@ -84,6 +85,40 @@ class MintUpgrade():
             self.check_command("sudo rm -rf '%s'" % BACKUP_APT_SOURCES, "Failed to restore APT sources")
 
     def prepare(self):
+        messages = []
+        messages.append("Executing '%s'. This will perform the following:" % self.command)
+        messages.append("")
+        messages.append("1 - Your system will be checked to ensure upgrading is possible.")
+        messages.append("")
+        messages.append("2 - Your repositories will be switched to point to %s and" % DESTINATION)
+        messages.append("    any 3rd party repositories will be removed. A backup of your APT sources")
+        messages.append("    will be written to %s." % BACKUP_APT_SOURCES)
+        if self.command == "prepare":
+            messages.append("")
+            messages.append("Your sources will NOT be restored to %s at the end of this command." % ORIGIN)
+        elif self.command == "check":
+            messages.append("")
+            messages.append("3 - The upgrade will be simulated so impacted packages can be evaluated.")
+            messages.append("")
+            messages.append("Your sources will be restored to %s at the end of this command." % ORIGIN)
+        elif self.command == "download":
+            messages.append("")
+            messages.append("3 - The packages and updates to perform the upgrade will be downloaded. You")
+            messages.append("    should run 'check' prior to this to ensure there are no conflicts, otherwise")
+            messages.append("    this step could fail.")
+            messages.append("")
+            messages.append("Your sources will be restored to %s at the end of this command." % ORIGIN)
+        elif self.command == "upgrade":
+            messages.append("")
+            messages.append("3 - The upgrade will be simulated so impacted packages can be evaluated.")
+            messages.append("")
+            messages.append("4 - The upgrade will be performed.  It is very important not to interrupt this")
+            messages.append("    step.")
+
+
+
+        self.continue_yes_no(messages, False)
+
         # Check codename
         self.progress("Checking your Linux Mint codename")
         if self.mint_codename != ORIGIN_CODENAME and self.mint_codename != DESTINATION_CODENAME:
@@ -158,12 +193,6 @@ class MintUpgrade():
         # Switch to the destination APT sources
         if not os.path.exists(BACKUP_APT_SOURCES):
             self.progress("Backing up your APT sources")
-            messages = []
-            messages.append("Your repositories will now be switched to point to %s." % DESTINATION)
-            messages.append("Any 3rd party repositories or PPA will be removed.")
-            messages.append("")
-            messages.append("A backup of your APT sources will be written to %s." % BACKUP_APT_SOURCES)
-            self.continue_yes_no(messages)
             os.system("mkdir -p %s" % BACKUP_APT_SOURCES)
             os.system("cp -R /etc/apt/sources.* %s/" % BACKUP_APT_SOURCES)
         self.progress("Setting up the repositories for %s" % DESTINATION)
@@ -185,7 +214,7 @@ class MintUpgrade():
         messages.append("causing the issue, remove them, and restart the upgrade. Pay close attention to what appears")
         messages.append("on the screen, particularly the packages being REMOVED.  Take note of any you may wish")
         messages.append("to reinstall after the upgrade.")
-        self.continue_yes_no(messages)
+        self.continue_press_enter(messages)
         self.progress("Simulating an upgrade")
         print("")
         os.system('DEBIAN_PRIORITY=critical sudo apt-get dist-upgrade -o Dpkg::Options::="--force-confnew" -o Dpkg::Options::="--force-overwrite" --assume-no')
@@ -210,8 +239,10 @@ class MintUpgrade():
     def download(self):
         self.progress("Downloading upgrade packages")
         messages = []
-        messages.append("APT will now download the package updates necessary for the upgrade to %s." % DESTINATION)
-        self.continue_yes_no(messages)
+        if self.command == "download":
+            messages.append("APT will now download the package updates necessary for the upgrade to %s." % DESTINATION)
+            self.continue_yes_no(messages)
+        print("")
         self.check_command("DEBIAN_PRIORITY=critical sudo apt-get dist-upgrade --download-only --yes", "Failed to download packages for the upgrade.")
 
         if self.command == "download":
@@ -232,13 +263,14 @@ class MintUpgrade():
         for removal in PACKAGES_PRE_REMOVALS:
             os.system('sudo apt-get remove --yes %s' % removal) # The return code indicates a failure if some packages were not found, so ignore it.
 
-        self.progress("Performing upgrade")
         messages = []
-        messages.append("APT will perform the upgrade to %s." % DESTINATION)
-        messages.append("This operation is non-reversible.")
-        messages.append("Make sure you made backups, you tested %s in live mode and you performed your favorite superstitious tricks before proceeding." % DESTINATION)
+        messages.append("APT will now perform the upgrade to %s." % DESTINATION)
+        messages.append("")
+        messages.append("This operation is non-reversible.  Make sure you have made backups, tested %s" % DESTINATION)
+        messages.append("in live mode, and have performed your favorite superstitious tricks before proceeding.")
         self.continue_yes_no(messages)
 
+        self.progress("Performing upgrade")
         self.reversible = False
 
         # Disable mintsystem during the upgrade
@@ -344,19 +376,28 @@ class MintUpgrade():
             print ("%s    %s%s" % (bcolors.WARNING, line, bcolors.ENDC))
         print("")
 
-    def continue_yes_no(self, messages):
+    def continue_press_enter(self, messages, restore=True):
         print ("")
         for message in messages:
             print ("%s    %s%s" % (bcolors.WARNING, message, bcolors.ENDC))
+        print("")
+        answer = input("%s    Press Enter to continue%s" % (bcolors.OKGREEN, bcolors.ENDC))
+
+    def continue_yes_no(self, messages, restore=True):
         print ("")
+        for message in messages:
+            print ("%s    %s%s" % (bcolors.WARNING, message, bcolors.ENDC))
         answer = None
         while (answer not in ["y", "yes", "n", "no"]):
+            print ("")
             answer = input("%s    Do you want to continue? [y/n]:%s " % (bcolors.OKGREEN, bcolors.ENDC)).lower()
         if answer in ["n", "no"]:
             print ("")
             print ("    Exiting...")
-            if self.reversible:
+            if self.reversible and restore:
                 self.restore_sources()
+            else:
+                print ("")
             sys.exit(0)
 
     def progress(self, message):
