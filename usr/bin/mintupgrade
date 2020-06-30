@@ -28,7 +28,7 @@ BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup-%s/APT/" % ORIGIN_CODE
 BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup-%s/fstab" % ORIGIN_CODENAME)
 
 PACKAGES_PRE_REMOVALS = []
-PACKAGES_REMOVALS = ["tomboy", "libxplayer-plparser18", "xplayer-common", "gksu", "memtest86+", "*hwe-18.04"]
+PACKAGES_REMOVALS = ["tomboy", "libxplayer-plparser18", "xplayer-common", "gksu", "memtest86+", "*hwe-18.04*", "linux-hwe*"]
 PACKAGES_ADDITIONS = ["neofetch", "ffmpegthumbnailer", "amd64-microcode", "intel-microcode", "celluloid", "drawing", "gnote", "grub2-theme-mint"]
 
 IMPORTANT_PACKAGES = ["cinnamon", "xreader", "xed", "mintsystem", "metacity", "nemo", "nemo-preview"]
