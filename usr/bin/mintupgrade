@@ -13,7 +13,7 @@ DESTINATION = "Linux Mint 20 'Ulyana'"
 DESTINATION_CODENAME = "ulyana"
 DESTINATION_BASE_CODENAME = "focal"
 
-SUPPORTED_EDITIONS = ["cinnamon"]
+SUPPORTED_EDITIONS = ["cinnamon", "mate", "xfce"]
 
 CHECK_ABSENT = []
 # CHECK_ABSENT = ["libservlet3.1-java"]
@@ -255,6 +255,9 @@ class MintUpgrade():
         elif self.mint_edition.lower() == "mate":
             self.progress("Disabling the MATE screensaver")
             os.system("killall mate-screensaver")
+        elif self.mint_edition.lower() == "xfce":
+            self.progress("Disabling the XFCE screensaver")
+            os.system("killall light-locker")
 
         self.progress("Saving /etc/fstab")
         os.system("cp /etc/fstab %s" % BACKUP_FSTAB)
@@ -271,6 +274,7 @@ class MintUpgrade():
         self.continue_yes_no(messages)
 
         self.progress("Performing upgrade")
+        print("")
         self.reversible = False
 
         # Disable mintsystem during the upgrade
