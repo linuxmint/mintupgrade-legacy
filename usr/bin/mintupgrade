@@ -200,15 +200,16 @@ class MintUpgrade():
         self.try_command(2, 'DEBIAN_PRIORITY=critical sudo apt-get update', [])
 
         if self.command == "prepare":
+            self.warn("Command '%s' completed successfully" % self.command)
             self.warn_inconsistent_sources()
 
     def check(self):
         messages = []
-        messages.append("APT will now calculate the package changes necessary to upgrade to %s." % DESTINATION)
+        messages.append("APT will now calculate the package changes necessary to upgrade to %s.\n" % DESTINATION)
         messages.append("If conflicts are detected and APT is unable to perform the upgrade, take note of the packages")
-        messages.append("causing the issue, remove them, and restart the upgrade. Pay close attention to what appears")
-        messages.append("on the screen, particularly the packages being REMOVED.  Take note of any you may wish")
-        messages.append("to reinstall after the upgrade.")
+        messages.append("causing the issue, remove them, and restart the upgrade.\n")
+        messages.append("Pay close attention to what appears on the screen, particularly the packages being REMOVED. Take")
+        messages.append("note of any you may wish to reinstall after the upgrade.")
         self.continue_press_enter(messages)
         self.progress("Simulating an upgrade")
         print("")
@@ -233,6 +234,8 @@ class MintUpgrade():
                       "    This might or might not indicate a problem. Check the APT output above to decide\n"
                       "    whether to continue with the upgrade. If this OK you might need to update them\n"
                       "    manually after the upgrade." % ", ".join(sorted(kept_packages)))
+        if self.command == "check":
+            self.warn("Command '%s' completed successfully" % self.command)
 
     def download(self):
         self.progress("Downloading upgrade packages")
@@ -244,6 +247,7 @@ class MintUpgrade():
         self.check_command("DEBIAN_PRIORITY=critical sudo apt-get dist-upgrade --download-only --yes", "Failed to download packages for the upgrade.")
 
         if self.command == "download":
+            self.warn("Command '%s' completed successfully" % self.command)
             self.warn_inconsistent_sources()
 
     def upgrade(self):
