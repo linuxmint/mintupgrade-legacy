@@ -4,6 +4,7 @@ import sys, os, apt
 import subprocess
 import filecmp
 import platform
+import subprocess
 
 ORIGIN = "Linux Mint 19.3 'Tricia'"
 ORIGIN_CODENAME = "tricia"
@@ -117,7 +118,6 @@ class MintUpgrade():
         self.progress("Checking your Linux Mint codename")
         if self.mint_codename != ORIGIN_CODENAME and self.mint_codename != DESTINATION_CODENAME:
             self.fail("Your version of Linux Mint is '%s'. Only %s can be upgraded to %s." % (self.mint_codename.capitalize(), ORIGIN, DESTINATION))
-
 
         bits, linkage = platform.architecture()
         if "32" in bits:
@@ -251,15 +251,19 @@ class MintUpgrade():
             self.warn_inconsistent_sources()
 
     def upgrade(self):
-        if self.mint_edition.lower() == "cinnamon":
-            self.progress("Disabling the Cinnamon screensaver")
-            os.system("killall cinnamon-screensaver") ## this is dbus activated, so killing it is no guarantee of it staying dead.
-        elif self.mint_edition.lower() == "mate":
-            self.progress("Disabling the MATE screensaver")
-            os.system("killall mate-screensaver")
-        elif self.mint_edition.lower() == "xfce":
-            self.progress("Disabling the XFCE screensaver")
-            os.system("killall light-locker")
+        self.progress("Disabling screensaver and power management")
+        os.system("killall cinnamon-screensaver")
+        os.system("killall mate-screensaver")
+        os.system("killall light-locker")
+
+        current_desktop = os.environ["XDG_CURRENT_DESKTOP"].lower()
+        current_desktop = current_desktop.replace("x-", "") # X-Cinnamon
+
+        if current_desktop == "xfce":
+            self.warn("Could not inhibit session.  You should disable power management for the duration\n"
+                      "    of this upgrade, and refrain from logging out or switching users.")
+        else:
+            subprocess.Popen(["mintupgrade-inhibit-power", str(os.getpid())])
 
         self.progress("Saving /etc/fstab")
         os.system("cp /etc/fstab %s" % BACKUP_FSTAB)
@@ -440,6 +444,13 @@ if __name__ == '__main__':
     if os.getuid() == 0:
         print ("")
         print ("Please don't run this command as root or with elevated privileges.")
+        print ("")
+        sys.exit(1)
+
+    status = subprocess.getoutput("acpi -a")
+    if "off-line" in status:
+        print ("")
+        print ("Please connect this computer to a power source before attempting to upgrade.")
         print ("")
         sys.exit(1)
 

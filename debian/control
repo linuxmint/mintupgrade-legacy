@@ -9,6 +9,7 @@ Package: mintupgrade
 Architecture: all
 Depends: python3 (>= 3.3),
          perl,
+         acpi,
          apt,
          aptitude,
          crudini,
