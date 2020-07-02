@@ -135,8 +135,11 @@ class MintUpgrade():
             messages.append("")
             messages.append("3 - The upgrade will be simulated so impacted packages can be evaluated.")
             messages.append("")
-            messages.append("4 - The upgrade will be performed.  It is very important not to interrupt this")
-            messages.append("    step.")
+            messages.append("4 - The required packages will be downloaded. There will be a final confirmation")
+            messages.append("    when this is completed before moving to the next step.")
+            messages.append("")
+            messages.append("5 - The upgrade will be performed.  It is very important not to interrupt this")
+            messages.append("    step. You may be required to interact or re-authenticate during the upgrade.")
 
         self.continue_yes_no(messages, False)
 
