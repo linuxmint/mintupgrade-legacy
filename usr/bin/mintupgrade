@@ -25,8 +25,34 @@ BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup-%s/APT/" % ORIGIN_CODE
 BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup-%s/fstab" % ORIGIN_CODENAME)
 
 PACKAGES_PRE_REMOVALS = []
-PACKAGES_REMOVALS = ["tomboy", "libxplayer-plparser18", "xplayer-common", "gksu", "memtest86+", "*hwe-18.04*", "linux-hwe*"]
-PACKAGES_ADDITIONS = ["neofetch", "ffmpegthumbnailer", "amd64-microcode", "intel-microcode", "celluloid", "drawing", "gnote", "grub2-theme-mint"]
+
+PACKAGES_REMOVALS = [
+    "tomboy",
+    "libxplayer-plparser18",
+    "xplayer-common",
+    "gksu",
+    "memtest86+",
+    "*hwe-18.04*",
+    "linux-hwe*",
+    "python3-tinycss" #
+]
+
+PACKAGES_ADDITIONS = [
+    "neofetch",
+    "ffmpegthumbnailer",
+    "amd64-microcode",
+    "intel-microcode",
+    "celluloid",
+    "drawing",
+    "gnote",
+    "grub2-theme-mint",
+    "adwaita-icon-theme-full", # 19.3->20
+    "warpinator", #
+    "alsa-topology-conf", #
+    "alsa-ucm-conf", #
+    "mesa-vdpau-drivers", #
+    "mesa-vulkan-drivers" #
+]
 
 IMPORTANT_PACKAGES = ["cinnamon", "xreader", "xed", "mintsystem", "metacity", "nemo", "nemo-preview"]
 
@@ -276,7 +302,7 @@ class MintUpgrade():
         messages.append("APT will now perform the upgrade to %s." % DESTINATION)
         messages.append("")
         messages.append("This operation is non-reversible.  Make sure you have made backups, tested %s" % DESTINATION)
-        messages.append("in live mode, and have performed your favorite superstitious tricks before proceeding.")
+        messages.append("in live mode and have performed your favorite superstitious tricks before proceeding.")
         self.continue_yes_no(messages)
 
         self.progress("Performing upgrade")
