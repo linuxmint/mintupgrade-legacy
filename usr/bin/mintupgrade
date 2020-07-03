@@ -54,7 +54,18 @@ PACKAGES_ADDITIONS = [
     "mesa-vulkan-drivers" #
 ]
 
-IMPORTANT_PACKAGES = ["cinnamon", "xreader", "xed", "mintsystem", "metacity", "nemo", "nemo-preview"]
+IMPORTANT_PACKAGES = [
+    "mint-meta-cinnamon",
+    "mint-meta-mate",
+    "mint-meta-xfce",
+    "xreader",
+    "xed",
+    "xviewer",
+    "pix",
+    "mintsystem",
+    "metacity",
+    "nemo-preview"
+]
 
 class bcolors:
     HEADER = '\033[95m'
