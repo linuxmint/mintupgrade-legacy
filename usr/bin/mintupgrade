@@ -18,7 +18,7 @@ SUPPORTED_EDITIONS = ["cinnamon", "mate", "xfce"]
 
 CHECK_ABSENT = []
 
-CHECK_PRESENT = ["default-jre"]
+CHECK_PRESENT = ["default-jre", "os-prober"]
 CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg", "linuxmint-keyring", "ubuntu-keyring", "mintsystem"]
 
 BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup-%s/APT/" % ORIGIN_CODENAME)
@@ -96,6 +96,15 @@ class MintUpgrade():
                     if DESTINATION_CODENAME in line:
                         self.points_to_destination = True
                         break
+
+        self.check_ac()
+
+    def check_ac(self):
+        status = subprocess.getoutput("acpi -a")
+        if "off-line" in status:
+            messages = ["You should connect this computer to a power source before attempting to upgrade."]
+            self.continue_yes_no(messages, False)
+            os.system("clear")
 
     def restore_sources(self):
         self.reversible = False
@@ -473,13 +482,6 @@ if __name__ == '__main__':
     if os.getuid() == 0:
         print ("")
         print ("Please don't run this command as root or with elevated privileges.")
-        print ("")
-        sys.exit(1)
-
-    status = subprocess.getoutput("acpi -a")
-    if "off-line" in status:
-        print ("")
-        print ("Please connect this computer to a power source before attempting to upgrade.")
         print ("")
         sys.exit(1)
 
