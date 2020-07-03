@@ -64,7 +64,11 @@ IMPORTANT_PACKAGES = [
     "pix",
     "mintsystem",
     "metacity",
-    "nemo-preview"
+    "nemo-preview",
+    "mintdrivers",
+    "mintupdate",
+    "mintsources",
+    "mintinstall"
 ]
 
 class bcolors:
