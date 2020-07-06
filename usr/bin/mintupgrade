@@ -85,16 +85,54 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+# fstab columns
+FSTAB_ID = 0
+FSTAB_MNTPT = 1
+FSTAB_TYPE = 2
+FSTAB_OPTS = 3
+
+CRYPTTAB_NAME = 0
+CRYPTTAB_PATH = 1
+CRYPTTAB_PW = 2
+CRYPTTAB_OPTS = 3
+
+def commented_out(line):
+    return line.strip().startswith("#")
+
+def comment_out(line):
+    if not commented_out(line):
+        return "# %s" % line
+    else:
+        return line
+
+def uncomment(line):
+    if not commented_out(line):
+        return line
+    else:
+        return line.replace("#", "").lstrip()
+
+def write_tabfile(path, lines):
+    tmp_filename = None
+
+    with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
+        tmp_filename = f.name
+        for line in lines:
+            f.write(line)
+
+    subprocess.run(["sudo", "mv", tmp_filename, path], check=True)
+
 class MintUpgrade():
 
     def __init__(self, mode):
         self.reversible = True
         self.command = mode
 
-        self.has_encrypted_swap_part = False
-        self.fstab_line = None
+        self.write_tabs = False
         self.make_swapfile = False
+        self.crypttab_name = None
+        self.existing_swap_path = None
         self.new_fstab = []
+        self.new_crypttab = []
 
         # Check the Mint info file
         if not os.path.exists("/etc/linuxmint/info"):
@@ -197,32 +235,89 @@ class MintUpgrade():
         if self.command == "upgrade":
             self.progress("Checking for encrypted swap")
 
-            with open("/etc/fstab", "r") as f:
+            # We'll do all the figuring out now, so we can discuss with the user,
+            # then at the end of the upgrade we'll write changes.
+
+            blkdev_name = None
+            blkdev_real_id = None
+            existing_swap_in_fstab = False
+
+            # Check crypttab to get /dev/mapper/id
+            with open("/etc/crypttab", "r") as f:
                 for line in f:
-                    if "cryptswap" in line and "swap" in line.partition(" ")[2]:
-                        if not line.strip().startswith("#"):
-                            self.has_encrypted_swap_part = True
-                            self.fstab_line = line
+                    if not commented_out(line):
+                        entry = line.split()
+                        if "swap" in entry[CRYPTTAB_OPTS]:
+                            self.encrypted_swap = True
+                            self.crypttab_name = blkdev_name = entry[CRYPTTAB_NAME]
+                            self.existing_swap_path = blkdev_real_id = entry[CRYPTTAB_PATH]
+                            line = comment_out(line)
 
-                            messages = []
-                            messages.append("You appear to be using an encrypted swap partition. This is no longer supported in")
-                            messages.append("%s. The upgrade process will disable this partition from being used." % DESTINATION)
-                            messages.append("")
-                            messages.append("A swap file of the default size (2gb) can be created instead.")
+                    self.new_crypttab.append(line)
+
+            if blkdev_name != None:
+                with open("/etc/fstab", "r") as f:
+                    # We're looking for a) the /dev/mapper name from crypttab and
+                    # b) a line with an id that matches the crypttab entry's path -
+                    # if we find one we can uncomment it (this happens if it was a
+                    # partition and not a file).
+
+                    for line in f:
+                        commented = False
+                        if commented_out(line):
+                            commented = True
+                            orig_line = line
+                            line = uncomment(line)
+
+                        entry = line.split()
+                        if len(entry) < 6:
+                            self.new_fstab.append(orig_line)
+                            continue
+
+                        if entry[FSTAB_ID] == ("/dev/mapper/%s" % blkdev_name) and not commented:
+                            # found the /dev/mapper entry from crypttab
+                            commented = True
+                        elif entry[FSTAB_ID] == blkdev_real_id and "swap" in entry[FSTAB_TYPE]:
+                            # This is either the original entry for the swap partition that was
+                            # found during installation, which was commented out when encryption
+                            # was setup, or it's an uncommented entry for a swapfile.  Either
+                            # way, we leave it, enabled. Any # was already removed above.
+                            existing_swap_in_fstab = True
+                            commented = False
+
+                        line = comment_out(line) if commented else line
+                        self.new_fstab.append(line)
+
+            messages = []
+            if self.encrypted_swap:
+                messages.append("You appear to be using an encrypted swap space. This is no longer supported in")
+                messages.append("%s and will be disabled." % DESTINATION)
+
+                if existing_swap_in_fstab:
+                    messages.append("")
+                    messages.append("The same swap space will be used, but will now be unencrypted.")
+                    self.continue_yes_no(messages, restore=False)
+                else:
+                    messages.append("")
+                    messages.append("No usable swap space detected. A swap file of the default size (2gb)")
+                    messages.append("can be created instead.")
+                    print ("")
+                    for message in messages:
+                        print ("%s    %s%s" % (bcolors.WARNING, message, bcolors.ENDC))
+                    answer = None
+                    while (answer not in ["y", "yes", "n", "no"]):
+                        print ("")
+                        answer = input("%s    Create a swap file? [y/n]:%s " % (bcolors.OKGREEN, bcolors.ENDC)).lower()
+                        if answer in ["y", "yes"]:
                             print ("")
-                            for message in messages:
-                                print ("%s    %s%s" % (bcolors.WARNING, message, bcolors.ENDC))
-                            answer = None
-                            while (answer not in ["y", "yes", "n", "no"]):
-                                print ("")
-                                answer = input("%s    Create a swap file? [y/n]:%s " % (bcolors.OKGREEN, bcolors.ENDC)).lower()
-                            if answer in ["y", "yes"]:
-                                print ("")
-                                self.make_swapfile = True;
-                                line = "# %s" % line
+                            self.make_swapfile = True
+                            self.new_fstab.append("\n")
+                            self.new_fstab.append("# Added by mintupgrade\n")
+                            self.new_fstab.append(
+                                "/swapfile                                 none            swap    sw              0       0\n"
+                            )
 
-                    self.new_fstab.append(line)
-
+                self.write_tabs = True
 
         if not self.points_to_destination:
             # Check packages
@@ -438,62 +533,33 @@ class MintUpgrade():
                       "    upgrader restored your original /etc/fstab and saved the modified file in \n"
                       "    %s.upgraded." % BACKUP_FSTAB)
 
-        if self.has_encrypted_swap_part:
+        if self.encrypted_swap:
             self.progress("Disabling encrypted swap partition")
             print("")
-            # find the name to search for in crypttab
-            #   /dev/mapper/cryptswap1 none swap sw 0 0
-            # we want cryptswap1
-            path = self.fstab_line.partition(" ")[0]
-            cryptname = path.rpartition("/")[2]
-
-            if os.path.exists("/etc/crypttab"):
-                os.system("cp /etc/crypttab %s" % BACKUP_CRYPTTAB)
-
-                new_crypttab = []
-                # comment out the matching line (I guess there could be other stuff there?)
-                with open("/etc/crypttab", "r") as f:
-                    for line in f:
-                        if cryptname in line:
-                            line = ("# %s" % line)
-
-                        new_crypttab.append(line)
-
-                # write a tempfile then copy over the old crypttab
-                filename = None
-                with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
-                    filename = f.name
-                    for line in new_crypttab:
-                        f.write(line)
-
-                subprocess.run(["sudo", "mv", filename, "/etc/crypttab"], check=True)
 
             try:
-                # Turn off active swap
                 subprocess.run(["sudo", "swapoff", "-a"], check=True)
+                subprocess.run(["sudo", "cryptsetup", "remove", self.crypttab_name], check=False)
+                subprocess.run(["cp", "/etc/crypttab", BACKUP_CRYPTTAB], check=True)
 
-                # Make a new one if desired
+                write_tabfile("/etc/crypttab", self.new_crypttab)
+                write_tabfile("/etc/fstab", self.new_fstab)
+
                 if self.make_swapfile:
                     subprocess.run(["sudo", "fallocate", "-l", "2G", "/swapfile"], check=True)
                     subprocess.run(["sudo", "chmod", "600", "/swapfile"], check=True)
                     subprocess.run(["sudo", "mkswap", "/swapfile"], check=True)
-                    self.new_fstab.append("")
-                    self.new_fstab.append("# Added by mintupgrade\n")
-                    self.new_fstab.append("/swapfile                                 none            swap    sw              0       0")
+                else:
+                    subprocess.run(["sudo", "mkswap", self.existing_swap_path], check=True)
 
-                # Write new fstab to a tempfile the copy it over the old one.
-                filename = None
-                with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
-                    filename = f.name
-                    for line in self.new_fstab:
-                        f.write(line)
-
-                subprocess.run(["sudo", "mv", filename, "/etc/fstab"], check=True)
+                subprocess.run(["sudo", "update-initramfs", "-u"])
+                subprocess.run(["sudo", "update-grub"])
             except Exception as e:
-                self.warn("Something went wrong trying to modify /etc/fstab: %s" % e)
+                messages = []
+                messages.append("Something went wrong trying to update your swap configuration: %s" % e)
+                # FIXME: Do we print all the steps required??
+                self.critical_warn(messages)
                 os.system("sudo cp %s /etc/fstab" % BACKUP_FSTAB)
-
-        os.system("sudo update-initramfs -u")
 
         self.progress("The upgrade is finished. Reboot the computer with \"sudo reboot\" when ready.")
 
@@ -538,7 +604,7 @@ class MintUpgrade():
             print ("%s    %s%s" % (bcolors.WARNING, line, bcolors.ENDC))
         print("")
 
-    def continue_press_enter(self, messages, restore=True):
+    def continue_press_enter(self, messages):
         print ("")
         for message in messages:
             print ("%s    %s%s" % (bcolors.WARNING, message, bcolors.ENDC))
