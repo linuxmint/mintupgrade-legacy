@@ -51,7 +51,9 @@ PACKAGES_ADDITIONS = [
     "alsa-topology-conf", #
     "alsa-ucm-conf", #
     "mesa-vdpau-drivers", #
-    "mesa-vulkan-drivers" #
+    "mesa-vulkan-drivers", #
+    "cryptsetup-initramfs",
+    "cryptsetup-run"
 ]
 
 IMPORTANT_PACKAGES = [
