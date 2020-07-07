@@ -1,3 +1,28 @@
+mintupgrade (2020.07.07) tricia; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Add the origin codename to the backup path
+
+  [ Michael Webster ]
+  * Start 19.3->20 upgrade
+  * formatting improvements
+  * Improve prompts
+  * Add support for mate, xfce
+  * Capture some additional hwe packages.
+  * Fix more formatting, move initial cache update before checking for mandatory packages.
+  * Add a command completion message, more formatting.
+  * Check that the system isn't on battery.
+  * Add some post-upgrade install files.
+  * Improve upgrade process explanation.
+  * Don't force the user to plug in. Add os-prober to required packages.
+  * add meta-mint packages to important list.
+  * more important packages.
+  * Add cryptsetup-initramfs and cryptsetup-run
+  * Disable encrypted swap if it exists.
+  * Update grub, disable with cryptsetup
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 07 Jul 2020 14:10:16 +0100
+
 mintupgrade (2020.03.19.1) debbie; urgency=medium
 
   * Move back libservlet3.1-java to CHECK_ABSENT
