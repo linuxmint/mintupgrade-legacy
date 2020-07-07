@@ -550,7 +550,9 @@ class MintUpgrade():
                     subprocess.run(["sudo", "chmod", "600", "/swapfile"], check=True)
                     subprocess.run(["sudo", "mkswap", "/swapfile"], check=True)
                 else:
-                    subprocess.run(["sudo", "mkswap", self.existing_swap_path], check=True)
+                    print("Running mkswap to reinitialize the swap space. This will fail if you're using")
+                    print("a swap partition, and that's ok.\n")
+                    subprocess.run(["sudo", "mkswap", self.existing_swap_path], check=False)
 
                 subprocess.run(["sudo", "update-initramfs", "-u"])
                 subprocess.run(["sudo", "update-grub"])
