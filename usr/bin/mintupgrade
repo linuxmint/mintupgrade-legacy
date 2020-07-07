@@ -127,6 +127,7 @@ class MintUpgrade():
         self.reversible = True
         self.command = mode
 
+        self.encrypted_swap = False
         self.write_tabs = False
         self.make_swapfile = False
         self.crypttab_name = None
