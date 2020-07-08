@@ -237,17 +237,18 @@ class MintUpgrade():
             existing_swap_in_fstab = False
 
             # Check crypttab to get /dev/mapper/id
-            with open("/etc/crypttab", "r") as f:
-                for line in f:
-                    if not commented_out(line):
-                        entry = line.split()
-                        if "swap" in entry[CRYPTTAB_OPTS]:
-                            self.encrypted_swap = True
-                            self.crypttab_name = blkdev_name = entry[CRYPTTAB_NAME]
-                            self.existing_swap_path = blkdev_real_id = entry[CRYPTTAB_PATH]
-                            line = comment_out(line)
+            if os.path.exists("/etc/crypttab"):
+                with open("/etc/crypttab", "r") as f:
+                    for line in f:
+                        if not commented_out(line):
+                            entry = line.split()
+                            if "swap" in entry[CRYPTTAB_OPTS]:
+                                self.encrypted_swap = True
+                                self.crypttab_name = blkdev_name = entry[CRYPTTAB_NAME]
+                                self.existing_swap_path = blkdev_real_id = entry[CRYPTTAB_PATH]
+                                line = comment_out(line)
 
-                    self.new_crypttab.append(line)
+                        self.new_crypttab.append(line)
 
             if blkdev_name != None:
                 with open("/etc/fstab", "r") as f:
