@@ -187,10 +187,7 @@ class MintUpgrade():
         messages.append("2 - Your repositories will be switched to point to %s and" % DESTINATION)
         messages.append("    any 3rd party repositories will be removed. A backup of your APT sources")
         messages.append("    will be written to %s." % BACKUP_APT_SOURCES)
-        if self.command == "prepare":
-            messages.append("")
-            messages.append("Your sources will NOT be restored to %s at the end of this command." % ORIGIN)
-        elif self.command == "check":
+        if self.command == "check":
             messages.append("")
             messages.append("3 - The upgrade will be simulated so impacted packages can be evaluated.")
             messages.append("")
@@ -368,10 +365,6 @@ class MintUpgrade():
         self.check_command("sudo rm -rf /etc/apt/sources.list.d/*", "Failed to configure APT sources")
         self.check_command("sudo cp /usr/share/linuxmint/mintupgrade/apt_destination_sources /etc/apt/sources.list.d/official-package-repositories.list", "Failed to configure APT sources")
         self.try_command(2, 'DEBIAN_PRIORITY=critical sudo apt-get update', [])
-
-        if self.command == "prepare":
-            self.warn("Command '%s' completed successfully" % self.command)
-            self.warn_inconsistent_sources()
 
     def check(self):
         messages = []
@@ -626,10 +619,8 @@ def usage():
     print ("%sCommands:%s" % (bcolors.HEADER, bcolors.ENDC))
     print ("  help              - prints this usage note")
     print ("  check             - checks the upgrade to %s. You should run this first." % DESTINATION)
-    print ("  upgrade           - upgrades to %s, performing all necessary steps." % DESTINATION)
-    print ("")
-    print ("  prepare           - prepares the upgrade to %s" % DESTINATION)
     print ("  download          - downloads the packages for the upgrade to %s" % DESTINATION)
+    print ("  upgrade           - upgrades to %s, performing all necessary steps." % DESTINATION)
     print ("  restore-sources   - restores the backed up APT sources (only use this")
     print ("                      command if you're still running %s)" % ORIGIN)
     print ("")
@@ -659,8 +650,6 @@ if __name__ == '__main__':
         upgrader.prepare()
         upgrader.check()
         upgrader.restore_sources()
-    elif command == "prepare":
-        upgrader.prepare()
     elif command == "download":
         upgrader.prepare()
         upgrader.download()
