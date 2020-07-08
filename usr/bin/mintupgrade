@@ -240,6 +240,17 @@ class MintUpgrade():
                             line = comment_out(line)
                     new_crypttab.append(line)
 
+            if encrypted_swap:
+                # Detect LVM, fix path for searching fstab and restoring swap space.
+                if len(subprocess.getoutput("sudo lvs")) > 0:
+                    print("\n    LVM Detected")
+                    for line in subprocess.getoutput("sudo cryptsetup status %s" % blkdev_name).splitlines():
+                        if "device:" not in line:
+                            continue
+
+                        blkdev_real_id = line.replace("device:", "").strip()
+                        break
+
                 if blkdev_name != None:
                     with open("/etc/fstab", "r") as f:
                         # We're looking for a) the /dev/mapper name from crypttab and
@@ -261,11 +272,11 @@ class MintUpgrade():
                                     existing_swap_in_fstab = True
                             new_fstab.append(line)
 
-            if encrypted_swap:
                 messages = []
-                messages.append("You swap space is encrypted.")
-                messages.append("An issue in Linux Mint 20 currently prevents the use of encrypted swap.")
-                messages.append("The swap space will now be disabled.")
+                messages.append("Your swap space is encrypted. An issue in %s currently" % DESTINATION)
+                messages.append("prevents the use of encrypted swap.")
+                messages.append("")
+                messages.append("This swap space will now be disabled.")
                 self.continue_yes_no(messages, restore=False)
 
                 self.progress("Disabling encrypted swap partition")
@@ -307,7 +318,8 @@ class MintUpgrade():
                     subprocess.run(["sudo", "update-initramfs", "-u"])
                     subprocess.run(["sudo", "update-grub"])
                     os.system("sudo /usr/lib/linuxmint/mintsystem/mint-adjust.py")
-                    self.warn("The encrypted swap was successfully disabled. Reboot your computer to make sure the new configuration is functional before proceeding with the upgrade.")
+                    self.warn("The encrypted swap was successfully disabled. Reboot your computer to make\n"
+                              "sure the new configuration is functional before proceeding with the upgrade.")
                     sys.exit(0)
                 except Exception as e:
                     messages = []
