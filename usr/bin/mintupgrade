@@ -314,6 +314,7 @@ class MintUpgrade():
                     messages.append("Your original files are stored in %s and %s" % (BACKUP_FSTAB, BACKUP_CRYPTTAB))
                     messages.append("Restore the latest system snapshot to go back to your original configuration.")
                     self.critical_warn(messages)
+                    sys.exit(1)
 
         if not self.points_to_destination:
             # Check packages
