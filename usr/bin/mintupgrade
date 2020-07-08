@@ -128,7 +128,6 @@ class MintUpgrade():
         self.command = mode
 
         self.encrypted_swap = False
-        self.write_tabs = False
         self.make_swapfile = False
         self.crypttab_name = None
         self.existing_swap_path = None
@@ -311,8 +310,6 @@ class MintUpgrade():
                             self.new_fstab.append(
                                 "/swapfile                                 none            swap    sw              0       0\n"
                             )
-
-                self.write_tabs = True
 
         if not self.points_to_destination:
             # Check packages
