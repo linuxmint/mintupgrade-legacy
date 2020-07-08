@@ -347,23 +347,6 @@ class MintUpgrade():
             if len(need_to_install) > 0:
                 self.fail("The following packages are required for a smooth install, please install them:\n\n    %s\n" % ", ".join(need_to_install))
 
-            # # Check that we don't have any Debian Multimedia packages
-            # self.progress("Checking deb-multimedia.org repository")
-            # output = subprocess.check_output("apt policy", shell=True).decode("UTF-8")
-            # if "deb-multimedia.org" in output:
-            #     self.fail("The Unofficial Debian Multimedia repository (https://deb-multimedia.org) is no longer used in LMDE 4. Please remove it from your APT configuration (usually in /etc/apt/sources.list.d/official-package-repositories.list).")
-
-            # self.progress("Checking deb-multimedia.org packages")
-            # dmo_packages = []
-            # for pkg in cache:
-            #     if pkg.is_installed:
-            #         if "-dmo" in pkg.installed.version:
-            #             dmo_packages.append(pkg.name)
-            #         if pkg.installed.source_name.endswith("-dmo"):
-            #             dmo_packages.append(pkg.name)
-            # if len(dmo_packages) > 0:
-            #     self.fail("The following packages come from the Unofficial Debian Multimedia repository: \n\n     %s.\n\nLaunch mintsources and go to the \"Maintenance tab\".\nFirst, use \"Downgrade Foreign Packages\" to downgrade all the packages.\nThen, use \"Remove Foreign Packages\" to remove any remaining packages with '-dmo' in their version number.\n" % ", ".join(dmo_packages))
-
             # Check that we're up to date
             self.progress("Checking if Linux Mint is up to date")
             for pkg in CHECK_UP_TO_DATE:
