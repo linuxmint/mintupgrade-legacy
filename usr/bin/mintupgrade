@@ -319,7 +319,7 @@ class MintUpgrade():
                     subprocess.run(["sudo", "update-grub"])
                     os.system("sudo /usr/lib/linuxmint/mintsystem/mint-adjust.py")
                     self.warn("The encrypted swap was successfully disabled. Reboot your computer to make\n"
-                              "sure the new configuration is functional before proceeding with the upgrade.")
+                              "    sure the new configuration is functional before proceeding with the upgrade.")
                     sys.exit(0)
                 except Exception as e:
                     messages = []
