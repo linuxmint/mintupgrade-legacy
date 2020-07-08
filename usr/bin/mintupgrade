@@ -177,6 +177,10 @@ class MintUpgrade():
             self.check_command("sudo rm -rf /etc/apt/sources.list.d/*", "Failed to restore APT sources")
             self.check_command("sudo cp -R %s/* /etc/apt/" % BACKUP_APT_SOURCES, "Failed to restore APT sources")
             self.check_command("sudo rm -rf '%s'" % BACKUP_APT_SOURCES, "Failed to restore APT sources")
+        if self.command == "restore-sources":
+            self.progress("Updating cache")
+            print("")
+            os.system("DEBIAN_PRIORITY=critical sudo apt-get update")
 
     def prepare(self):
         messages = []
