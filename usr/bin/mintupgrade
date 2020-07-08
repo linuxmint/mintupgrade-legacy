@@ -182,31 +182,24 @@ class MintUpgrade():
         messages = []
         messages.append("Executing '%s'. This will perform the following:" % self.command)
         messages.append("")
-        messages.append("1 - Your system will be checked to ensure upgrading is possible.")
-        messages.append("")
-        messages.append("2 - Your repositories will be switched to point to %s and" % DESTINATION)
+        messages.append("1 - Your repositories will be switched to point to %s and" % DESTINATION)
         messages.append("    any 3rd party repositories will be removed. A backup of your APT sources")
         messages.append("    will be written to %s." % BACKUP_APT_SOURCES)
         if self.command == "check":
             messages.append("")
-            messages.append("3 - The upgrade will be simulated so impacted packages can be evaluated.")
+            messages.append("2 - The upgrade will be simulated so impacted packages can be evaluated.")
             messages.append("")
             messages.append("Your sources will be restored to %s at the end of this command." % ORIGIN)
         elif self.command == "download":
             messages.append("")
-            messages.append("3 - The packages and updates to perform the upgrade will be downloaded. You")
-            messages.append("    should run 'check' prior to this to ensure there are no conflicts, otherwise")
-            messages.append("    this step could fail.")
+            messages.append("2 - The packages and updates to perform the upgrade will be downloaded.")
             messages.append("")
             messages.append("Your sources will be restored to %s at the end of this command." % ORIGIN)
         elif self.command == "upgrade":
             messages.append("")
-            messages.append("3 - The upgrade will be simulated so impacted packages can be evaluated.")
+            messages.append("2 - The packages and updates to perform the upgrade will be downloaded.")
             messages.append("")
-            messages.append("4 - The required packages will be downloaded. There will be a final confirmation")
-            messages.append("    when this is completed before moving to the next step.")
-            messages.append("")
-            messages.append("5 - The upgrade will be performed.  It is very important not to interrupt this")
+            messages.append("3 - Upon confirmation, the upgrade will be performed. It is very important not to interrupt this")
             messages.append("    step. You may be required to interact or re-authenticate during the upgrade.")
 
         self.continue_yes_no(messages, False)
@@ -402,16 +395,11 @@ class MintUpgrade():
 
     def download(self):
         self.progress("Downloading upgrade packages")
-        messages = []
-        if self.command == "download":
-            messages.append("APT will now download the package updates necessary for the upgrade to %s." % DESTINATION)
-            self.continue_yes_no(messages)
         print("")
         self.check_command("DEBIAN_PRIORITY=critical sudo apt-get dist-upgrade --download-only --yes", "Failed to download packages for the upgrade.")
 
         if self.command == "download":
             self.warn("Command '%s' completed successfully" % self.command)
-            self.warn_inconsistent_sources()
 
     def upgrade(self):
         self.progress("Disabling screensaver and power management")
@@ -566,12 +554,6 @@ class MintUpgrade():
             self.restore_sources()
         sys.exit(1)
 
-    def warn_inconsistent_sources(self):
-        messages = []
-        messages.append("Your system is now in an inconsistent state. You must run 'mintupgrade restore-sources'")
-        messages.append("if you wish to abort the upgrade process.")
-        self.critical_warn(messages)
-
     def critical_warn(self, messages):
         print("")
         print("%s!!  WARNING:%s\n" % (bcolors.WARNING, bcolors.ENDC))
@@ -653,6 +635,7 @@ if __name__ == '__main__':
     elif command == "download":
         upgrader.prepare()
         upgrader.download()
+        upgrader.restore_sources()
     elif command == "upgrade":
         upgrader.prepare()
         upgrader.download()
