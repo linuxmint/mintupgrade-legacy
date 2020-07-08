@@ -1,3 +1,12 @@
+mintupgrade (2020.07.08) tricia; urgency=medium
+
+  [ Michael Webster ]
+  * Make mkswap failing a non-fatal event.
+  * Add a newline at the end of apt_destination_sources.
+  * Add a missing declaration 'self.encrypted_swap'.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 08 Jul 2020 10:03:55 +0100
+
 mintupgrade (2020.07.07) tricia; urgency=medium
 
   [ Clement Lefebvre ]
