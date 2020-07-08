@@ -22,9 +22,10 @@ CHECK_ABSENT = []
 CHECK_PRESENT = ["default-jre", "os-prober"]
 CHECK_UP_TO_DATE = ["mintupgrade", "apt", "dpkg", "linuxmint-keyring", "ubuntu-keyring", "mintsystem"]
 
-BACKUP_APT_SOURCES = os.path.expanduser("~/Upgrade-Backup-%s/APT/" % ORIGIN_CODENAME)
-BACKUP_FSTAB = os.path.expanduser("~/Upgrade-Backup-%s/fstab" % ORIGIN_CODENAME)
-BACKUP_CRYPTTAB = os.path.expanduser("~/Upgrade-Backup-%s/crypttab" % ORIGIN_CODENAME)
+BACKUP_DIR = os.path.expanduser("~/Upgrade-Backup-%s" % ORIGIN_CODENAME)
+BACKUP_APT_SOURCES = os.path.join(BACKUP_DIR, "APT")
+BACKUP_FSTAB = os.path.join(BACKUP_DIR, "fstab")
+BACKUP_CRYPTTAB = os.path.join(BACKUP_DIR, "crypttab")
 
 PACKAGES_PRE_REMOVALS = []
 
@@ -270,6 +271,7 @@ class MintUpgrade():
                 self.progress("Disabling encrypted swap partition")
                 print("")
                 try:
+                    os.system("mkdir -p %s" % BACKUP_DIR)
                     subprocess.run(["sudo", "swapoff", "-a"], check=True)
                     subprocess.run(["sudo", "cryptsetup", "remove", blkdev_name], check=False)
                     subprocess.run(["cp", "/etc/crypttab", BACKUP_CRYPTTAB], check=True)
