@@ -272,7 +272,7 @@ class MintUpgrade():
                 print("")
                 try:
                     os.system("mkdir -p %s" % BACKUP_DIR)
-                    subprocess.run(["sudo", "swapoff", "-a"], check=True)
+                    subprocess.run(["sudo", "swapoff", "-a"], check=False)
                     subprocess.run(["sudo", "cryptsetup", "remove", blkdev_name], check=False)
                     subprocess.run(["cp", "/etc/crypttab", BACKUP_CRYPTTAB], check=True)
                     subprocess.run(["cp", "/etc/fstab", BACKUP_FSTAB], check=True)
