@@ -37,7 +37,9 @@ PACKAGES_REMOVALS = [
     "memtest86+",
     "*hwe-18.04*",
     "linux-hwe*",
-    "python3-tinycss" #
+    "python3-tinycss", #
+    "indicator-application",
+    "grub2-theme-mint"
 ]
 
 PACKAGES_ADDITIONS = [
@@ -48,7 +50,6 @@ PACKAGES_ADDITIONS = [
     "celluloid",
     "drawing",
     "gnote",
-    "grub2-theme-mint",
     "adwaita-icon-theme-full", # 19.3->20
     "warpinator", #
     "alsa-topology-conf", #
@@ -56,7 +57,9 @@ PACKAGES_ADDITIONS = [
     "mesa-vdpau-drivers", #
     "mesa-vulkan-drivers", #
     "cryptsetup-initramfs",
-    "cryptsetup-run"
+    "cryptsetup-run",
+    "libreoffice-gtk3",
+    "gamemode"
 ]
 
 IMPORTANT_PACKAGES = [
