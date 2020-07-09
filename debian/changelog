@@ -1,3 +1,9 @@
+mintupgrade (2020.07.09.2) tricia; urgency=medium
+
+  * Preserve ownership/permissions of new table files
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 09 Jul 2020 23:23:05 +0100
+
 mintupgrade (2020.07.09.1) tricia; urgency=medium
 
   * Crypttab: Don't fail on empty lines
