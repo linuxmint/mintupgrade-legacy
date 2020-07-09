@@ -1,3 +1,28 @@
+mintupgrade (2020.07.09) ulyana; urgency=medium
+
+  [ Clement Lefebvre ]
+  * Remove commented DMO checks
+  * Remove commented LMDE plymouth checks
+  * Remove prepare command line argument
+  * Restore sources after mintupgrade download
+  * restore-source: Update cache when explicitly restoring sources
+  * Remove unused variable
+  * Don't fail when /etc/crypttab doesn't exist
+  * Disable encrypted swap before the upgrade
+  * Enrypted swap: Exit on error
+  * Encrypted swap: Fix non-existing backup_dir
+  * Make swapoff non-fatal
+
+  [ Michael Webster ]
+  * Don't write new fstab and crypttab before we've passed all possible modifications, and fix their names.
+  * Use a different method of detecting an encrypted swap path when LVM is in use.
+  * Fix indentation.
+
+  [ Clement Lefebvre ]
+  * Tune pkg additions/removals
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 09 Jul 2020 09:40:28 +0100
+
 mintupgrade (2020.07.08) tricia; urgency=medium
 
   [ Michael Webster ]
