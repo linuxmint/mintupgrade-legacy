@@ -123,7 +123,7 @@ def write_tabfile(path, lines):
         for line in lines:
             f.write(line)
 
-    subprocess.run(["sudo", "mv", tmp_filename, path], check=True)
+    subprocess.run(["sudo", "cp", tmp_filename, path], check=True)
 
 class MintUpgrade():
 
