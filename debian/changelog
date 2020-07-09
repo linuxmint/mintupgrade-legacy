@@ -1,4 +1,10 @@
-mintupgrade (2020.07.09) ulyana; urgency=medium
+mintupgrade (2020.07.09.1) tricia; urgency=medium
+
+  * Crypttab: Don't fail on empty lines
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 09 Jul 2020 23:18:42 +0100
+
+mintupgrade (2020.07.09) tricia; urgency=medium
 
   [ Clement Lefebvre ]
   * Remove commented DMO checks
