@@ -236,7 +236,7 @@ class MintUpgrade():
                 for line in f:
                     if not commented_out(line):
                         entry = line.split()
-                        if "swap" in entry[CRYPTTAB_OPTS]:
+                        if len(entry) > 3 and "swap" in entry[CRYPTTAB_OPTS]:
                             encrypted_swap = True
                             blkdev_name = entry[CRYPTTAB_NAME]
                             blkdev_real_id = entry[CRYPTTAB_PATH]
