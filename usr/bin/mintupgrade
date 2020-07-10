@@ -431,14 +431,14 @@ class MintUpgrade():
         os.system("killall mate-screensaver")
         os.system("killall light-locker")
 
-        current_desktop = os.environ["XDG_CURRENT_DESKTOP"].lower()
-        current_desktop = current_desktop.replace("x-", "") # X-Cinnamon
-
-        if current_desktop == "xfce":
-            self.warn("Could not inhibit session.  You should disable power management for the duration\n"
-                      "    of this upgrade, and refrain from logging out or switching users.")
-        else:
-            subprocess.Popen(["mintupgrade-inhibit-power", str(os.getpid())])
+        current_desktop = os.getenv("XDG_CURRENT_DESKTOP")
+        if current_desktop != None:
+            current_desktop = current_desktop.lower().replace("x-", "") # X-Cinnamon
+            if current_desktop == "xfce":
+                self.warn("Could not inhibit session.  You should disable power management for the duration\n"
+                          "    of this upgrade, and refrain from logging out or switching users.")
+            else:
+                subprocess.Popen(["mintupgrade-inhibit-power", str(os.getpid())])
 
         self.progress("Saving /etc/fstab")
         os.system("cp /etc/fstab %s" % BACKUP_FSTAB)
