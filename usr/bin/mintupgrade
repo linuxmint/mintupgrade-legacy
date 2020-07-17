@@ -304,6 +304,11 @@ class MintUpgrade():
         if not os.path.exists("/etc/timeshift.json"):
             self.fail("Please set up system snapshots. If anything goes wrong with the upgrade, snapshots will allow you to restore your operating system. Install and configure Timeshift, and create a snapshot before proceeding with the upgrade.")
 
+        self.progress("Updating cache")
+        print("")
+        os.system("DEBIAN_PRIORITY=critical sudo apt-get update")
+        cache = apt.Cache()
+
         # Check APT sources (no 3rd party repositories)
         self.progress("Checking your APT repositories")
         third_party_repositories = get_third_party_repositories()
@@ -438,11 +443,6 @@ class MintUpgrade():
 
         if not self.points_to_destination:
             # Check packages
-
-            self.progress("Updating cache")
-            print("")
-            os.system("DEBIAN_PRIORITY=critical sudo apt-get update")
-            cache = apt.Cache()
 
             self.progress("Checking packages")
             cache = apt.Cache()
