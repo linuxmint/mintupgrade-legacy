@@ -326,8 +326,6 @@ class MintUpgrade():
                 print("    - %s" % orphan)
             self.continue_yes_no(["The packages above are not from the official repositories. If you experience issues, or for a safe upgrade, do not continue, remove them and re-run the upgrade."], False)
 
-        sys.exit(1)
-
         # Check for encrypted SWAP (https://bugs.launchpad.net/ubuntu/+source/cryptsetup/+bug/1802617)
         self.progress("Checking for encrypted swap")
         encrypted_swap = False
