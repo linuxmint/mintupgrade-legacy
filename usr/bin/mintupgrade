@@ -153,7 +153,7 @@ def get_third_party_repositories():
 # The first list is a list of orphaned packages (packages which have no origin)
 # The second list is a list of packages which version is not the official version (this does not
 # include packages which simply aren't up to date)
-def get_foreign_packages():
+def get_foreign_packages(find_orphans=True, find_downgradable_packages=True):
     orphan_packages = []
     downgradable_packages = []
 
@@ -171,37 +171,41 @@ def get_foreign_packages():
 
             # Find packages which aren't downloadable
             if (pkg.candidate == None) or (not pkg.candidate.downloadable):
-                downloadable = False
-                for version in pkg.versions:
-                    if version.downloadable:
-                        downloadable = True
-                if not downloadable:
-                    orphan_packages.append(pkg.name)
-
+                if find_orphans:
+                    downloadable = False
+                    for version in pkg.versions:
+                        if version.downloadable:
+                            downloadable = True
+                    if not downloadable:
+                        orphan_packages.append([pkg, installed_version])
             if (pkg.candidate != None):
-                best_version = None
-                archive = None
-                for version in pkg.versions:
-                    if not version.downloadable:
-                        continue
-                    for origin in version.origins:
-                        if origin.origin != None and origin.origin.lower() in ("ubuntu", "canonical", "linuxmint"):
-                            if best_version is None:
-                                best_version = version
-                                archive = origin.archive
-                            else:
-                                if version.policy_priority > best_version.policy_priority:
+                if find_downgradable_packages:
+                    best_version = None
+                    archive = None
+                    for version in pkg.versions:
+                        if not version.downloadable:
+                            continue
+                        for origin in version.origins:
+                            if origin.origin != None and origin.origin.lower() in ("ubuntu", "canonical", "linuxmint"):
+                                if best_version is None:
                                     best_version = version
                                     archive = origin.archive
-                                elif version.policy_priority == best_version.policy_priority:
-                                    # same priorities, compare version
-                                    return_code = subprocess.call(["dpkg", "--compare-versions", version.version, "gt", best_version.version])
-                                    if return_code == 0:
+                                else:
+                                    if version.policy_priority > best_version.policy_priority:
                                         best_version = version
                                         archive = origin.archive
+                                    elif version.policy_priority == best_version.policy_priority:
+                                        # same priorities, compare version
+                                        return_code = subprocess.call(["dpkg", "--compare-versions", version.version, "gt", best_version.version])
+                                        if return_code == 0:
+                                            best_version = version
+                                            archive = origin.archive
 
-                if best_version != None and installed_version != best_version and pkg.candidate.version != best_version.version:
-                    downgradable_packages.append([pkg.name, installed_version, best_version.version, archive])
+                    if best_version != None and installed_version != best_version and pkg.candidate.version != best_version.version:
+                        if  pkg.essential == False and pkg.installed.priority != required_priority:
+                            downgradable_packages.append([pkg, installed_version, best_version, archive])
+                        else:
+                            print("Skipping foreign package %s (cannot be removed by aptdaemon, because it's required or essential)." % pkg.name)
 
     return (orphan_packages, downgradable_packages)
 
@@ -321,14 +325,15 @@ class MintUpgrade():
         if len(foreigns) > 0:
             print("")
             for foreign in foreigns:
-                (name, installed_version, best_version, archive) = foreign
-                print("    - %s: %s, should be %s (from %s)" % (name, installed_version, best_version, archive))
+                (pkg, installed_version, best_version, archive) = foreign
+                print("    - %s: %s, should be %s (from %s)" % (pkg.name, installed_version, best_version.version, archive))
             self.fail("The packages above have incorrect versions. They need to be downgraded.")
 
         if len(orphans) > 0:
             print("")
             for orphan in orphans:
-                print("    - %s" % orphan)
+                (pkg, installed_version) = orphan
+                print("    - %s" % pkg.name)
             self.continue_yes_no(["The packages above are not from the official repositories. If you experience issues, or for a safe upgrade, do not continue, remove them and re-run the upgrade."], False)
 
         # Check for encrypted SWAP (https://bugs.launchpad.net/ubuntu/+source/cryptsetup/+bug/1802617)
