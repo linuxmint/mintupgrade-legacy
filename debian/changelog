@@ -1,3 +1,12 @@
+mintupgrade (2020.07.17) tricia; urgency=medium
+
+  * Colors: Switch yellow to orange
+  * Fail if 3rd party repositories are detected
+  * Detect foreign packages
+  * Use apt-cache to detect 3rd party repositories
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 17 Jul 2020 14:49:07 +0100
+
 mintupgrade (2020.07.11) tricia; urgency=medium
 
   * Don't crash is env doesn't have XDG_CURRENT_DESKTOP
