@@ -128,15 +128,25 @@ def write_tabfile(path, lines):
 # Returns a list of all active 3rd party repositories
 def get_third_party_repositories():
     origins = set()
-    cache = apt.Cache()
-    for key in cache.keys():
-        pkg = cache[key]
-        if (pkg.is_installed and pkg.candidate != None):
-            for version in pkg.versions:
-                for origin in version.origins:
-                    if origin.origin != None and origin.origin.lower() not in ("", "ubuntu", "canonical", "linuxmint"):
-                        origins.add("%s (%s)" % (origin.origin, origin.site))
-                        break
+    output = subprocess.getoutput("apt-cache policy")
+    for chunk in output.split("release "):
+        if "origin" in chunk:
+            origin = None
+            label = None
+            name = None
+            for line in chunk.split("\n"):
+                line = line.strip()
+                if "o=" in line and "l=" in line:
+                    for part in line.split(","):
+                        if (part.startswith("o=")):
+                            name = part.replace("o=", "")
+                        elif (part.startswith("l=")):
+                            label = part.replace("l=", "")
+                elif line.startswith("origin "):
+                    origin = line.replace("origin ", "")
+
+            if name != None and name.lower() not in ("ubuntu", "canonical", "linuxmint"):
+                origins.add("%s (%s) - %s" % (label, name, origin))
     return origins
 
 # Returns a tuple containing two lists
@@ -298,7 +308,7 @@ class MintUpgrade():
         self.progress("Checking your APT repositories")
         third_party_repositories = get_third_party_repositories()
         if len(third_party_repositories) > 0:
-            self.fail("The following 3rd party repositories were detected. Disable them and refresh your APT cache.\n\n    - %s\n" % ("\n    - ".join(third_party_repositories)))
+            self.fail("The following 3rd party repositories were detected. Disable them and refresh your APT cache.\n\n    - %s\n" % ("\n    - ".join(sorted(third_party_repositories))))
 
         # Check foreign packages
         self.progress("Checking your APT packages")
