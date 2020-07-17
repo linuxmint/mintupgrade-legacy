@@ -139,6 +139,62 @@ def get_third_party_repositories():
                         break
     return origins
 
+# Returns a tuple containing two lists
+# The first list is a list of orphaned packages (packages which have no origin)
+# The second list is a list of packages which version is not the official version (this does not
+# include packages which simply aren't up to date)
+def get_foreign_packages():
+    orphan_packages = []
+    downgradable_packages = []
+
+    cache = apt.Cache()
+
+    # python-apt doesn't give us a constant for this value
+    # it's "required" in English, but it could be anything in
+    # other languages
+    required_priority = cache['dpkg'].installed.priority
+
+    for key in cache.keys():
+        pkg = cache[key]
+        if (pkg.is_installed):
+            installed_version = pkg.installed.version
+
+            # Find packages which aren't downloadable
+            if (pkg.candidate == None) or (not pkg.candidate.downloadable):
+                downloadable = False
+                for version in pkg.versions:
+                    if version.downloadable:
+                        downloadable = True
+                if not downloadable:
+                    orphan_packages.append(pkg.name)
+
+            if (pkg.candidate != None):
+                best_version = None
+                archive = None
+                for version in pkg.versions:
+                    if not version.downloadable:
+                        continue
+                    for origin in version.origins:
+                        if origin.origin != None and origin.origin.lower() in ("ubuntu", "canonical", "linuxmint"):
+                            if best_version is None:
+                                best_version = version
+                                archive = origin.archive
+                            else:
+                                if version.policy_priority > best_version.policy_priority:
+                                    best_version = version
+                                    archive = origin.archive
+                                elif version.policy_priority == best_version.policy_priority:
+                                    # same priorities, compare version
+                                    return_code = subprocess.call(["dpkg", "--compare-versions", version.version, "gt", best_version.version])
+                                    if return_code == 0:
+                                        best_version = version
+                                        archive = origin.archive
+
+                if best_version != None and installed_version != best_version and pkg.candidate.version != best_version.version:
+                    downgradable_packages.append([pkg.name, installed_version, best_version.version, archive])
+
+    return (orphan_packages, downgradable_packages)
+
 class MintUpgrade():
 
     def __init__(self, mode):
@@ -238,11 +294,29 @@ class MintUpgrade():
         if not os.path.exists("/etc/timeshift.json"):
             self.fail("Please set up system snapshots. If anything goes wrong with the upgrade, snapshots will allow you to restore your operating system. Install and configure Timeshift, and create a snapshot before proceeding with the upgrade.")
 
-        # check APT sources (no 3rd party repositories)
+        # Check APT sources (no 3rd party repositories)
         self.progress("Checking your APT repositories")
         third_party_repositories = get_third_party_repositories()
         if len(third_party_repositories) > 0:
             self.fail("The following 3rd party repositories were detected. Disable them and refresh your APT cache.\n\n    - %s\n" % ("\n    - ".join(third_party_repositories)))
+
+        # Check foreign packages
+        self.progress("Checking your APT packages")
+        (orphans, foreigns) = get_foreign_packages()
+        if len(foreigns) > 0:
+            print("")
+            for foreign in foreigns:
+                (name, installed_version, best_version, archive) = foreign
+                print("    - %s: %s, should be %s (from %s)" % (name, installed_version, best_version, archive))
+            self.fail("The packages above have incorrect versions. They need to be downgraded.")
+
+        if len(orphans) > 0:
+            print("")
+            for orphan in orphans:
+                print("    - %s" % orphan)
+            self.continue_yes_no(["The packages above are not from the official repositories. If you experience issues, or for a safe upgrade, do not continue, remove them and re-run the upgrade."], False)
+
+        sys.exit(1)
 
         # Check for encrypted SWAP (https://bugs.launchpad.net/ubuntu/+source/cryptsetup/+bug/1802617)
         self.progress("Checking for encrypted swap")
