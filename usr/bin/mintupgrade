@@ -80,11 +80,11 @@ IMPORTANT_PACKAGES = [
 ]
 
 class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
+    HEADER = '\033[95m' # Magenta
+    OKBLUE = '\033[94m' # Light Blue
+    OKGREEN = '\033[92m' # Light Green
+    WARNING = '\033[38;5;202m' # Orange
+    FAIL = '\033[91m' # Light Red
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
