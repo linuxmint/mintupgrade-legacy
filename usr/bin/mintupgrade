@@ -548,9 +548,6 @@ class MintUpgrade():
 
         messages = []
         messages.append("APT will now perform the upgrade to %s." % DESTINATION)
-        messages.append("")
-        messages.append("This operation is non-reversible.  Make sure you have made backups, tested %s" % DESTINATION)
-        messages.append("in live mode and have performed your favorite superstitious tricks before proceeding.")
         self.continue_yes_no(messages)
 
         self.progress("Performing upgrade")
