@@ -305,6 +305,11 @@ class MintUpgrade():
         os.system("DEBIAN_PRIORITY=critical sudo apt-get update")
         cache = apt.Cache()
 
+        self.progress("Checking for broken packages")
+        if cache.broken_count > 0:
+            # offer to fix?
+            self.fail("You have broken packages - please run 'apt install -f' to resolve any issues and try to upgrade again.")
+
         # Check APT sources (no 3rd party repositories)
         self.progress("Checking your APT repositories")
         third_party_repositories = get_third_party_repositories()
