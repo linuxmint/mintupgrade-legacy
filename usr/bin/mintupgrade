@@ -526,18 +526,7 @@ class MintUpgrade():
 
     def upgrade(self):
         self.progress("Disabling screensaver and power management")
-        os.system("killall cinnamon-screensaver")
-        os.system("killall mate-screensaver")
-        os.system("killall light-locker")
-
-        current_desktop = os.getenv("XDG_CURRENT_DESKTOP")
-        if current_desktop != None:
-            current_desktop = current_desktop.lower().replace("x-", "") # X-Cinnamon
-            if current_desktop == "xfce":
-                self.warn("Could not inhibit session.  You should disable power management for the duration\n"
-                          "    of this upgrade, and refrain from logging out or switching users.")
-            else:
-                subprocess.Popen(["mintupgrade-inhibit-power", str(os.getpid())])
+        self.disable_pm()
 
         self.progress("Saving /etc/fstab")
         os.system("cp /etc/fstab %s" % BACKUP_FSTAB)
@@ -615,6 +604,33 @@ class MintUpgrade():
                       "    %s.upgraded." % BACKUP_FSTAB)
 
         self.progress("The upgrade is finished. Reboot the computer with \"sudo reboot\" when ready.")
+
+    def disable_pm(self):
+        os.system("killall cinnamon-screensaver")
+        os.system("killall mate-screensaver")
+        os.system("killall light-locker")
+
+        inhibit_failed = False
+
+        current_desktop = os.getenv("XDG_CURRENT_DESKTOP")
+        if current_desktop != None:
+            current_desktop = current_desktop.lower().replace("x-", "") # X-Cinnamon
+            p = subprocess.Popen(["mintupgrade-inhibit-power", str(os.getpid()), current_desktop])
+
+            try:
+                # process should wait until we exit. If it exits early, it failed.
+                p.wait(3)
+                inhibit_failed = True
+            except:
+                pass
+        else:
+            inhibit_failed = True
+
+        if inhibit_failed:
+            messages = []
+            messages.append("Could not inhibit session.  You should disable power management for the duration")
+            messages.append("    of this upgrade, and refrain from logging out or switching users.")
+            self.continue_yes_no(messages, False)
 
     def check_command(self, command, message):
         ret = os.system(command)
