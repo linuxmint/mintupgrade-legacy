@@ -787,7 +787,7 @@ class MintUpgrade():
                 problem_messages[make_fs_id(dir)] = "You need %s on '%s' but only have %s. You must free an additional %s." \
                     % (free_needed_str, make_fs_id(dir), initial_free_str, free_at_least_str)
             else:
-                ok_messages[make_fs_id(dir)] = "You need %s on '%s', and have %s free - looks good." \
+                ok_messages[make_fs_id(dir)] = "You need %s on '%s' for the upgrade process, and have %s free - looks good." \
                     % (free_needed_str, make_fs_id(dir), initial_free_str)
 
         if len(ok_messages) > 0:
