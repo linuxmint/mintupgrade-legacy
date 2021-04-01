@@ -348,7 +348,7 @@ class MintUpgrade():
             # offer to fix?
             self.fail("You have broken packages - please run 'apt install -f' to resolve any issues and try to upgrade again.")
 
-        self.progress("Running autoclean to remove unused packages")
+        self.progress("Running autoremove to remove unused packages")
         self.check_command("sudo apt-get --purge autoremove --yes -o APT::AutoRemove::SuggestsImportant=false", "Failed to autoremove unused packages.")
 
         # Check APT sources (no 3rd party repositories)
@@ -630,7 +630,7 @@ class MintUpgrade():
         for removal in PACKAGES_REMOVALS:
             os.system('sudo apt-get purge --yes %s' % removal) # The return code indicates a failure if some packages were not found, so ignore it.
 
-        self.progress("Running autoclean to remove unused packages")
+        self.progress("Running autoremove to remove unused packages")
         self.check_command("sudo apt-get --purge autoremove --yes -o APT::AutoRemove::SuggestsImportant=false", "Failed to autoremove unused packages.")
 
         self.progress("Performing system adjustments")
