@@ -128,6 +128,16 @@ def rm_check_completed():
     except Exception as e:
         pass
 
+def timeshift_config_exists():
+    # Config file location has changed in timeshift 20.11.1 (mint 20 series):
+    # https://github.com/teejee2008/timeshift/commit/55870b94d1402d2d2be71a2170d0ddb036f8f65a
+    # Timeshift moves the file, not copies, so should be in one place OR the other.
+
+    old_path = pathlib.Path("/etc/timeshift.json")
+    new_path = pathlib.Path("/etc/timeshift/timeshift.json")
+
+    return new_path.exists() or old_path.exists()
+
 def commented_out(line):
     return line.strip().startswith("#")
 
@@ -325,7 +335,7 @@ class MintUpgrade():
 
         # Check for timeshift configuration
         self.progress("Checking your Timeshift configuration")
-        if not os.path.exists("/etc/timeshift.json"):
+        if not timeshift_config_exists():
             self.fail("Please set up system snapshots. If anything goes wrong with the upgrade, snapshots will allow you to restore your operating system. Install and configure Timeshift, and create a snapshot before proceeding with the upgrade.")
 
         self.progress("Updating cache")
