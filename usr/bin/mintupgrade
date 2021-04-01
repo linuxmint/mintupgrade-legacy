@@ -1,11 +1,14 @@
 #!/usr/bin/python3
 
 import sys, os, apt
+import apt_pkg
 import subprocess
 import filecmp
 import platform
 import subprocess
 import tempfile
+
+from gi.repository import GLib
 
 ORIGIN = "Linux Mint 19.3 'Tricia'"
 ORIGIN_CODENAME = "tricia"
@@ -518,6 +521,10 @@ class MintUpgrade():
                       "    This might or might not indicate a problem. Check the APT output above to decide\n"
                       "    whether to continue with the upgrade. If this OK you might need to update them\n"
                       "    manually after the upgrade." % ", ".join(sorted(kept_packages)))
+
+        self.progress("Checking disk space requirements")
+        self.check_disk_space_requirements(cache)
+
         if self.command == "check":
             self.warn("Command '%s' completed successfully" % self.command)
 
@@ -636,6 +643,120 @@ class MintUpgrade():
             messages.append("Could not inhibit session.  You should disable power management for the duration")
             messages.append("    of this upgrade, and refrain from logging out or switching users.")
             self.continue_yes_no(messages, False)
+
+    def check_disk_space_requirements(self, cache):
+        download_size = 0.0
+        additional_space_needed = 0.0
+
+        # get download size
+        pm = apt_pkg.PackageManager(cache._depcache)
+        fetcher = apt_pkg.Acquire()
+
+        # this may fail, but you'll still get the download size, vs cache.required_download
+        try:
+            pm.get_archives(fetcher, cache._list, cache._records)
+        except:
+            pass
+
+        download_size = fetcher.fetch_needed
+
+        # additional space needed when all finished
+        additional_space_needed = cache._depcache.usr_size
+
+        # gather mount info so we calculate free space correctly.
+        mounted = []
+        mnt_map = {}
+        fs_free = {}
+        with open("/proc/mounts") as mounts:
+            for line in mounts:
+                try:
+                    (what, where, fs, options, a, b) = line.split()
+                except ValueError as e:
+                    # print("line '%s' in /proc/mounts not understood (%s)" % (line, e))
+                    continue
+                if not where in mounted:
+                    mounted.append(where)
+        # make sure mounted is sorted by longest path
+        mounted.sort(key=len, reverse=True)
+
+        class FreeSpace(object):
+            " helper class that represents the free space on each mounted fs "
+            def __init__(self, initialFree):
+                self.initial_free = initialFree
+                self.free = initialFree
+                self.need = 0
+
+        def make_fs_id(d):
+            """ return 'id' of a directory so that directories on the
+                same filesystem get the same id (simply the mount_point)
+            """
+            for mount_point in mounted:
+                if d.startswith(mount_point):
+                    return mount_point
+            return "/"
+
+        archivedir = apt_pkg.config.find_dir("Dir::Cache::archives")
+
+        for d in ["/", "/usr", "/boot", archivedir, "/tmp/"]:
+            d = os.path.realpath(d)
+            fs_id = make_fs_id(d)
+            if os.path.exists(d):
+                st = os.statvfs(d)
+                free = st.f_bavail * st.f_frsize
+            else:
+                # print("directory '%s' does not exists" % d)
+                free = 0
+            if fs_id in mnt_map:
+                # print("Dir %s mounted on %s" % (d, mnt_map[fs_id]))
+                fs_free[d] = fs_free[mnt_map[fs_id]]
+            else:
+                # print("Free space on %s: %s" % (d, free))
+                mnt_map[fs_id] = d
+                fs_free[d] = FreeSpace(free)
+
+        # sum up space requirements
+        for (dir, size) in [
+            (archivedir, download_size),
+            ("/usr", additional_space_needed),
+            # plus 50M safety buffer in /usr
+            ("/usr", 50 * 1024 * 1024), # buffer
+            ("/boot", 50 * 1024 * 1024), # buffer - should we calculate real kernel/initramfs space required?
+            ("/tmp", 5 * 1024 * 1024),   # /tmp for dkms LP: #427035
+            ("/", 10 * 1024 * 1024),     # more buffer /
+        ]:
+            # we are ensuring we have more than enough free space not less
+            if size < 0:
+                continue
+            dir = os.path.realpath(dir)
+            # print("dir '%s' needs '%s' of '%s' (%f)" % (dir, size, fs_free[dir], fs_free[dir].free))
+            fs_free[dir].free -= size
+            fs_free[dir].need += size
+
+        # check for space required violations
+        insufficient = False
+
+        ok_messages = {}
+        problem_messages = {}
+        for dir in fs_free:
+            free_needed_str = GLib.format_size(fs_free[dir].need)
+            initial_free_str = GLib.format_size(fs_free[dir].initial_free)
+
+            if fs_free[dir].free < 0:
+                free_at_least_str = GLib.format_size(abs(fs_free[dir].free) + 1024 * 1024 * 10)
+
+                problem_messages[make_fs_id(dir)] = "You need %s on '%s' but only have %s. You must free an additional %s." \
+                    % (free_needed_str, make_fs_id(dir), initial_free_str, free_at_least_str)
+            else:
+                ok_messages[make_fs_id(dir)] = "You need %s on '%s', and have %s free - looks good." \
+                    % (free_needed_str, make_fs_id(dir), initial_free_str)
+
+        if len(ok_messages) > 0:
+            for msg in list(ok_messages.values()):
+                self.progress(msg)
+
+        if len(problem_messages) > 0:
+            self.critical_warn(list(problem_messages.values()))
+            self.fail("Please free up the required disk space and try again.")
 
     def check_command(self, command, message):
         ret = os.system(command)
