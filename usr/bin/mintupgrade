@@ -7,6 +7,7 @@ import filecmp
 import platform
 import subprocess
 import tempfile
+import pathlib
 
 from gi.repository import GLib
 
@@ -102,6 +103,30 @@ CRYPTTAB_NAME = 0
 CRYPTTAB_PATH = 1
 CRYPTTAB_PW = 2
 CRYPTTAB_OPTS = 3
+
+# Don't allow any other commands until a 'check' has succeeded.
+CHECK_COMPLETE_PATH = pathlib.Path("/tmp/mintupgrade/check_completed")
+
+def ensure_check_completed():
+    if not CHECK_COMPLETE_PATH.exists():
+        print("Please run 'mintupgrade check' before attempting to execute any other commands.")
+        exit(1)
+
+def set_check_completed():
+    CHECK_COMPLETE_PATH.parent.mkdir(exist_ok=True)
+    CHECK_COMPLETE_PATH.touch()
+
+def rm_check_completed():
+    try:
+        # < python 3.8 doesn't have missing_ok parameter
+        CHECK_COMPLETE_PATH.unlink()
+    except FileNotFoundError:
+        pass
+
+    try:
+        CHECK_COMPLETE_PATH.parent.rmdir()
+    except Exception as e:
+        pass
 
 def commented_out(line):
     return line.strip().startswith("#")
@@ -531,6 +556,8 @@ class MintUpgrade():
         if self.command == "check":
             self.warn("Command '%s' completed successfully" % self.command)
 
+        set_check_completed()
+
     def download(self):
         self.progress("Downloading upgrade packages")
         print("")
@@ -864,16 +891,20 @@ if __name__ == '__main__':
     if command == "restore-sources":
         upgrader.restore_sources()
     elif command == "check":
+        rm_check_completed()
         upgrader.prepare()
         upgrader.check()
         upgrader.restore_sources()
     elif command == "download":
+        ensure_check_completed()
         upgrader.prepare()
         upgrader.download()
         upgrader.restore_sources()
     elif command == "upgrade":
+        ensure_check_completed()
         upgrader.prepare()
         upgrader.download()
         upgrader.upgrade()
+        rm_check_completed()
     else:
         usage()
